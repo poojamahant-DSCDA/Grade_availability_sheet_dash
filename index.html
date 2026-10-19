@@ -72,9 +72,8 @@ button.on{background:var(--navy);border-color:var(--navy);color:#fff}
   <label class="mono">Plant / Depot</label><select id="plantSel"></select><input class="f" id="plantOther" placeholder="Type plant or depot manually" hidden style="margin-top:8px">
   <label class="mono">Status</label><div class="seg" id="fs"></div>
   <label class="mono">Date</label><input class="f" type="date" id="date">
-  <div class="prev" id="prev">Pick a grade and plant to see customers.</div>
   <button class="go" id="add">ADD TO BOARD →</button></div>
- <div class="card"><div class="top2"><h2 style="margin:0">Live grade board</h2><span class="mono" id="sync">Syncing…</span></div>
+ <div class="card"><div class="top2"><h2 style="margin:0" id="bt">Live grade board</h2><span class="mono" id="sync">Syncing…</span></div>
   <div id="list"></div></div>
 </div></div></div>
 <script>
@@ -123,9 +122,8 @@ const getG=()=>($("gradeSel").value=="__o"?$("gradeOther").value:$("gradeSel").v
 const getP=()=>($("plantSel").value=="__o"?$("plantOther").value:$("plantSel").value).trim();
 function form(){seg("ft",["PP","PE","PVC"],T,v=>{T=v;form()});fillGrades();if(!$("plantSel").options.length)fillPlants();segS();prev()}
 function segS(){seg("fs",["Available","Production starts"],S,v=>{S=v;segS()})}
-function prev(){const g=getG(),p=getP();if(!g||!p){$("prev").textContent="Pick a grade and plant to see customers.";return}
- const b=buyers(g,p),o=others(g,p);
- $("prev").innerHTML=`<b>Customers to notify (${b.length})</b><br>`+(b.map(([c,n])=>`<span class="chip">${esc(c)}<small>×${n}</small></span>`).join("")||"<span class='meta'>No past orders for this grade at this plant.</span>")+(o.length?`<div class="meta" style="margin-top:8px">Bought from other locations:</div>`+o.slice(0,12).map(c=>`<span class="chip m">${esc(c)}</span>`).join(""):"")}
+function prev(){render()}
+function clearG(){$("gradeSel").value="";$("gradeOther").hidden=true;$("gradeOther").value="";render()}
 function all(){return [...E,...manual]}
 function render(){const A=all(),f=Q.toLowerCase();
  $("types").innerHTML=["PP","PE","PVC"].map(t=>{const a=A.filter(e=>e.t==t);const cu=new Set(a.flatMap(e=>buyers(e.g,e.p).map(x=>x[0])));
@@ -133,10 +131,24 @@ function render(){const A=all(),f=Q.toLowerCase();
   return `<div class="card type ${F==t?"on":""}" onclick="F=F=='${t}'?'ALL':'${t}';render()"><div class="ico">${t[0]}</div><h3>${t}</h3><div class="m">${nmx} · grade availability</div>
   <div class="st"><span><b>${a.length}</b>live grades</span><span><b>${cu.size}</b>customers</span></div></div>`}).join("");
  const L=A.filter(e=>(F=="ALL"||e.t==F)&&(!f||(e.g+" "+e.p+" "+buyers(e.g,e.p).map(x=>x[0]).join(" ")).toLowerCase().includes(f)));
- $("list").innerHTML=L.map(e=>{const b=buyers(e.g,e.p),msg=`${e.g} (${e.t}) – ${e.s} at ${e.p}${e.d?" from "+e.d:""}`;
+ const chips=b=>b.map(([c,n])=>`<span class="chip">${esc(c)}<small>×${n}</small></span>`).join("");
+ const rowH=e=>{const b=buyers(e.g,e.p),msg=`${e.g} (${e.t}) – ${e.s} at ${e.p}${e.d?" from "+e.d:""}`;
   return `<div class="row"><div class="top2"><div><span class="tag ${e.t}">${e.t}</span><span class="g">${esc(e.g)}</span><span class="pill ${e.s=="Available"?"":"w"}">${e.s}</span></div>
   <div class="act"><span class="meta">${esc(e.p)} · ${e.d?esc(e.d):"no date"}</span><button onclick="cp(${JSON.stringify(msg+(b.length?"\nCustomers: "+b.map(x=>x[0]).join(", "):"")).replace(/"/g,"&quot;")})">Copy</button>${e.sheet?"":`<button onclick="del('${e.id}')">✕</button>`}</div></div>
-  <div>${b.map(([c,n])=>`<span class="chip">${esc(c)}<small>×${n}</small></span>`).join("")||'<span class="meta">No matching customers yet</span>'}</div></div>`}).join("")||'<div class="empty">Nothing matches.</div>'}
+  <div>${chips(b)||'<span class="meta">No matching customers yet</span>'}</div></div>`};
+ const g=getG(),p=getP();$("bt").textContent=g?"Grade details":"Live grade board";
+ if(g){const k=nm(g),ty=GT[k]||T,ent=A.filter(e=>nm(e.g)==k),locs={};
+  Object.entries(B).forEach(([key,v])=>{const[gg,l]=key.split("|");if(gg==k)locs[l]=v});
+  const LR=Object.entries(locs).map(([l,v])=>[tc(l),Object.entries(v).sort((x,y)=>y[1]-x[1])]).sort((x,y)=>y[1].length-x[1].length);
+  const all_=new Set(LR.flatMap(x=>x[1].map(c=>c[0]))),here=p?buyers(g,p):[];
+  $("list").innerHTML=`<div class="row" style="background:var(--chip)"><div class="top2"><div><span class="tag ${ty}">${ty}</span><span class="g">${esc(g.toUpperCase())}</span></div>
+   <button onclick="clearG()">← Show all grades</button></div><div class="meta">${all_.size} customers · ${LR.length} locations · ${ent.length} on board</div></div>
+   <div class="mono" style="margin:16px 0 8px">On the board</div>${ent.map(rowH).join("")||'<div class="meta" style="margin-bottom:8px">Not on the board yet. Choose a plant and press Add.</div>'}
+   ${p?`<div class="mono" style="margin:16px 0 4px">Customers to notify at ${esc(p)} (${here.length})</div><div>${chips(here)||'<span class="meta">No past orders for this grade at this plant.</span>'}</div>`:""}
+   <div class="mono" style="margin:18px 0 4px">All customers by location</div>
+   ${LR.map(([l,b])=>`<div style="margin:8px 0"><b style="font-size:13px">${esc(l)}</b> <span class="meta">${b.length}</span><div>${chips(b)}</div></div>`).join("")||'<div class="meta">No order history for this grade yet.</div>'}`;
+  return}
+ $("list").innerHTML=L.map(rowH).join("")||'<div class="empty">Nothing matches.</div>'}
 function cp(t){navigator.clipboard&&navigator.clipboard.writeText(t)}
 function del(id){manual=manual.filter(e=>e.id!=id);try{localStorage.setItem(LS,JSON.stringify(manual))}catch(e){}render()}
 async function load(){const n=$("note");
