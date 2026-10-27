@@ -4,7 +4,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>DSCDA · Polymer Grade Availability</title>
+<title>DSCDA · Grade Availability Desk</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -107,10 +107,17 @@ button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 .note{margin:0 0 16px;padding:12px 16px;border-radius:12px;background:#fff7e6;border:1px solid #f3d9a4;font-size:13px;display:none}
 
 .empty{text-align:center;color:var(--mu);padding:34px}
+.tabbar{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 4px;padding:8px;background:rgba(255,255,255,.72);border:1px solid var(--bd);border-radius:14px;box-shadow:0 5px 18px rgba(30,64,140,.05)}
+.workspace-tab{border:1px solid transparent;background:transparent;color:var(--mu);font-weight:600;padding:11px 16px;border-radius:10px;transition:background .15s,border-color .15s,color .15s}
+.workspace-tab:hover{border-color:var(--bd);color:var(--navy)}
+.workspace-tab.active{background:var(--navy);border-color:var(--navy);color:#fff;box-shadow:0 4px 10px rgba(20,48,107,.16)}
+.tab-panel{min-height:360px}.tab-panel[hidden]{display:none!important}.tab-panel>.sec{margin-top:20px}
+body.dark .tabbar{background:#172747;border-color:var(--bd)}body.dark .workspace-tab{color:var(--mu)}body.dark .workspace-tab.active{background:#315a9e;color:#fff;border-color:#315a9e}
+@media(max-width:600px){.tabbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-tab{padding:10px 7px;font-size:12px}.top{flex-wrap:wrap}.top .search{order:3;flex-basis:100%}.top .actions{margin-left:auto}}
 
 
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 24px}.kpi,.panel{background:#fff;border:1px solid var(--bd);border-radius:16px;padding:16px;box-shadow:0 6px 18px rgba(30,64,140,.05)}.kpi .num{font-size:27px;font-weight:600;color:var(--navy);margin-top:7px}.kpi .hint,.mini{font-size:12px;color:var(--mu)}.toolbar,.actions,.statusbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.toolbar select,.toolbar input{max-width:190px}.panel{margin-top:18px;overflow:auto}.matrix{border-collapse:separate;border-spacing:4px;width:100%;font-size:12px}.matrix th{padding:8px;color:var(--mu);text-align:left;white-space:nowrap}.matrix td{padding:8px;border-radius:7px;background:#f2f5fb;text-align:center;min-width:65px}.matrix td.av{background:#dbeafe;color:#1d4ed8;font-weight:700}.matrix td.up{background:#fff0d5;color:#9a5b00;font-weight:700}.bar{height:10px;background:#eaf0fd;border-radius:8px;overflow:hidden}.bar i{display:block;height:100%;background:#1d4ed8}.skeleton{height:58px;border-radius:12px;background:linear-gradient(90deg,#eef2fa,#f8faff,#eef2fa);margin:8px 0}body.dark{--ink:#e8eefc;--mu:#b6c5e5;--bd:#31466f;--card:#172747;--chip:#21375e;background:linear-gradient(180deg,#0d1830,#142342);color:var(--ink)}body.dark .top,body.dark .card,body.dark .row,body.dark .panel,body.dark .kpi{background:#172747;color:var(--ink)}body.dark input,body.dark select,body.dark button{background:#1d3155;color:var(--ink);border-color:#405783}body.dark .matrix td{background:#22375b}body.dark .matrix td.av{background:#244d85;color:#d9eaff}body.dark .matrix td.up{background:#674b22;color:#ffdfa3}:focus-visible{outline:3px solid #60a5fa;outline-offset:2px}@media(max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.w{padding:0 12px 40px}.hero{padding:32px 0 24px}.card{padding:18px}.toolbar select,.toolbar input{max-width:none;flex:1;min-width:130px}}.support-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.support-grid .panel h2{font-size:21px}@media(max-width:760px){.support-grid{grid-template-columns:1fr}}
-@media print{.top,.hero,.note,#types,#entryCard,.toolbar,button{display:none!important}body{background:#fff}.w{max-width:none;padding:0}.panel,.card,.row{box-shadow:none;break-inside:avoid}}
+@media print{.top,.tabbar,.hero,.note,#types,#entryCard,.toolbar,button{display:none!important}.tab-panel[hidden]{display:none!important}body{background:#fff}.w{max-width:none;padding:0}.panel,.card,.row{box-shadow:none;break-inside:avoid}}
 </style></head><body><div class="w">
 
 <div class="top"><div class="logo">DC</div><div class="brand"><b>DSCDA</b><span class="mono">Digital Operating System</span></div>
@@ -119,17 +126,19 @@ button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 
 <div class="me"><i id="roleIcon">MD</i><span><span id="roleName">MD</span><br><span class="mono" style="font-size:8px">Role · <span id="roleText">MD</span></span></span></div><div class="actions"><button id="darkToggle" aria-label="Toggle dark mode">Dark mode</button><button id="refreshBtn">Refresh</button></div></div>
 
+<nav class="tabbar" aria-label="Workspace sections" role="tablist">
+  <button class="workspace-tab active" id="tab-main" role="tab" aria-selected="true" aria-controls="panel-main" data-tab="main">Main Workspace</button>
+  <button class="workspace-tab" id="tab-matrix" role="tab" aria-selected="false" aria-controls="panel-matrix" data-tab="matrix">Grade Matrix</button>
+  <button class="workspace-tab" id="tab-analytics" role="tab" aria-selected="false" aria-controls="panel-analytics" data-tab="analytics">Analytics</button>
+  <button class="workspace-tab" id="tab-quality" role="tab" aria-selected="false" aria-controls="panel-quality" data-tab="quality">Data Quality</button>
+</nav>
 
-
+<section class="tab-panel active" id="panel-main" role="tabpanel" aria-labelledby="tab-main">
 <div class="hero"><div class="mono">Polymer · Grade availability</div><h1 class="serif">Grade Availability Desk</h1>
 
-<p>Log a grade once. Every customer who buys it from that plant is ready to notify.</p></div>
+<p>Log a grade once. Plant / Depot options are limited to locations with actual purchase history for the selected grade.</p></div>
 
 <div class="note" id="note" role="status" aria-live="polite"></div>
-<div class="kpis"><div class="kpi"><div class="mono">Grades live today</div><div class="num" id="kLive">—</div><div class="hint">Available grades on board</div></div><div class="kpi"><div class="mono">Customers to notify</div><div class="num" id="kNotify">—</div><div class="hint">Matched purchase history</div></div><div class="kpi"><div class="mono">Older than 30 days</div><div class="num" id="kOld">—</div><div class="hint">Board entries</div></div><div class="kpi"><div class="mono">Last entry time</div><div class="num" id="kLast" style="font-size:17px">—</div><div class="hint" id="kLastHint">Waiting for data</div></div></div>
-
-
-
 <div class="sec"><div class="mono">Business lines</div><h2>Select a polymer family</h2>
 
 <div class="cards" id="types"></div></div>
@@ -140,7 +149,7 @@ button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 
 <div class="grid">
 
- <div class="card"><div class="seg" id="ft"></div>
+ <div class="card" id="entryCard"><div class="mono" style="margin-bottom:8px">Log entry</div><div class="seg" id="ft"></div>
 
   <label class="mono">Grade</label><select id="gradeSel"></select><input class="f" id="gradeOther" placeholder="Type grade manually" hidden style="margin-top:8px">
 
@@ -152,25 +161,36 @@ button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 
   <button class="go" id="add">ADD TO BOARD →</button></div>
 
- <div class="card"><div class="top2"><h2 style="margin:0" id="bt">Live grade board</h2><span class="mono" id="sync">Syncing…</span></div>
+ <div class="card" id="boardCard"><div class="top2"><h2 style="margin:0" id="bt">Live grade dashboard</h2><span class="mono" id="sync">Syncing…</span></div>
 
   <div class="toolbar"><select id="filterPlant" aria-label="Filter by plant"><option value="">All plants / depots</option></select><select id="filterStatus" aria-label="Filter by status"><option value="">All statuses</option><option>Available</option><option>Production starts</option><option>Status T</option></select><select id="filterFamily" aria-label="Filter by family"><option value="">All families</option><option>PP</option><option>PE</option><option>PVC</option></select><input class="f" id="dateFrom" type="date" aria-label="From date"><input class="f" id="dateTo" type="date" aria-label="To date"><button id="clearFilters">Clear filters</button><button id="exportBtn">Export CSV</button><button id="printBtn">Print</button></div><div class="statusbar mini"><span id="syncDetail">Loading source data…</span><span id="resultCount"></span></div><div id="list"><div class="skeleton"></div><div class="skeleton"></div></div></div>
 
 </div></div></div>
 
-<!-- Additional management tools sit below the original left-form / right-board workspace. -->
-<div class="sec" id="managementTools">
-  <div class="mono">Management view</div><h2>Plant × grade matrix</h2>
-  <div class="panel"><div class="mini">Blue = Available · Amber = Production starts / upcoming · — = no board entry</div><div id="matrixWrap">Loading matrix…</div></div>
-  <div class="support-grid">
-    <div class="panel"><h2 style="margin-top:0">Monthly demand</h2><div class="mini">Board entries by month</div><div id="monthlyChart">Loading chart…</div></div>
-    <div class="panel"><h2 style="margin-top:0">Top 10 customers</h2><div class="mini">Based on matched purchase-history counts</div><div id="topCustomers">Loading customers…</div></div>
+</section>
+
+<section class="tab-panel" id="panel-matrix" role="tabpanel" aria-labelledby="tab-matrix" hidden>
+  <div class="sec"><div class="mono">Management view</div><h2>Plant × grade matrix</h2>
+    <div class="panel"><div class="mini">Blue = Available · Amber = Production starts / upcoming · — = no board entry</div><div id="matrixWrap">Loading matrix…</div></div>
   </div>
-  <div class="support-grid">
-    <div class="panel"><h2 style="margin-top:0">Customer contacts</h2><div id="contactTools" class="mini">Select a grade and plant / depot to prepare customer messages.</div></div>
-    <div class="panel"><h2 style="margin-top:0">Data quality</h2><div id="qualityPanel" class="mini">Checking source data…</div></div>
+</section>
+
+<section class="tab-panel" id="panel-analytics" role="tabpanel" aria-labelledby="tab-analytics" hidden>
+  <div class="sec"><div class="mono">Management insights</div><h2>Availability analytics</h2>
+    <div class="kpis"><div class="kpi"><div class="mono">Grades live today</div><div class="num" id="kLive">—</div><div class="hint">Available grades on board</div></div><div class="kpi"><div class="mono">Customers to notify</div><div class="num" id="kNotify">—</div><div class="hint">Matched purchase history</div></div><div class="kpi"><div class="mono">Older than 30 days</div><div class="num" id="kOld">—</div><div class="hint">Board entries</div></div><div class="kpi"><div class="mono">Last entry time</div><div class="num" id="kLast" style="font-size:17px">—</div><div class="hint" id="kLastHint">Waiting for data</div></div></div>
+    <div class="support-grid">
+      <div class="panel"><h2 style="margin-top:0">Monthly demand</h2><div class="mini">Board entries by month</div><div id="monthlyChart">Loading chart…</div></div>
+      <div class="panel"><h2 style="margin-top:0">Top 10 customers</h2><div class="mini">Based on matched purchase-history counts</div><div id="topCustomers">Loading customers…</div></div>
+    </div>
+    <div class="panel"><h2 style="margin-top:0">Customer contacts</h2><div id="contactTools" class="mini">Select a grade and plant / depot in Main Workspace to prepare customer messages.</div></div>
   </div>
-</div>
+</section>
+
+<section class="tab-panel" id="panel-quality" role="tabpanel" aria-labelledby="tab-quality" hidden>
+  <div class="sec"><div class="mono">Data governance</div><h2>Data quality checks</h2>
+    <div class="panel"><div id="qualityPanel" class="mini">Checking source data…</div></div>
+  </div>
+</section>
 
 <script>
 
@@ -265,19 +285,28 @@ function fillGrades(){const set={};Object.keys(GT).filter(g=>GT[g]==T).forEach(g
  $("gradeOther").hidden=true;$("gradeOther").value=""}
 
 function fillPlants(){
- const g=getG?getG():"", gradeKey=nm(g), select=$("plantSel"), previous=select.value, locations=new Set();
- if(g) Object.keys(B).forEach(key=>{const a=key.split("|");if(a[0]===gradeKey&&Object.keys(B[key]||{}).length)locations.add(a[1])});
- const plants=[...locations].map(tc).sort((a,b)=>a.localeCompare(b));
- select.innerHTML=(g?'<option value="">Select plant / depot…</option>':'<option value="">Select grade first…</option>')+plants.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join("");
- select.disabled=!g;const keep=plants.find(p=>nm(p)===nm(previous));if(keep)select.value=keep;
- $("plantOther").hidden=true;$("plantOther").value="";
- if(g&&!plants.length){select.innerHTML='<option value="">No purchase history for this grade</option>';select.disabled=true;}
+  const g=getG(), gradeKey=nm(g), select=$("plantSel"), previous=select.value;
+  const locations=new Set();
+  if(g){
+    Object.keys(B).forEach(key=>{
+      const parts=key.split("|");
+      if(parts[0]===gradeKey && Object.keys(B[key]||{}).length>0) locations.add(parts[1]);
+    });
+  }
+  const plants=[...locations].map(tc).sort((a,b)=>a.localeCompare(b));
+  select.innerHTML=(g?'<option value="">Select plant / depot…</option>':'<option value="">Select grade first…</option>')+
+    plants.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join("");
+  select.disabled=!g || plants.length===0;
+  const keep=plants.find(p=>nm(p)===nm(previous));
+  if(keep) select.value=keep;
+  $("plantOther").hidden=true;$("plantOther").value="";
+  if(g && !plants.length) select.innerHTML='<option value="">No purchase history for this grade</option>';
 }
 const getG=()=>($("gradeSel").value=="__o"?$("gradeOther").value:$("gradeSel").value).trim();
 
 const getP=()=>($("plantSel").value=="__o"?$("plantOther").value:$("plantSel").value).trim();
 
-function form(){seg("ft",["PP","PE","PVC"],T,v=>{T=v;fillGrades();$("plantSel").value="";fillPlants();form()});fillGrades();fillPlants();segS();prev()}
+function form(){seg("ft",["PP","PE","PVC"],T,v=>{T=v;$("gradeSel").value="";$("plantSel").value="";fillGrades();fillPlants();form()});fillGrades();fillPlants();segS();prev()}
 
 function segS(){seg("fs",["Available","Production starts"],S,v=>{S=v;segS()})}
 
@@ -470,6 +499,14 @@ $("clearFilters").onclick=()=>{["filterPlant","filterStatus","filterFamily","dat
 ["filterPlant","filterStatus","filterFamily","dateFrom","dateTo"].forEach(id=>$(id).addEventListener("change",render));
 $("exportBtn").onclick=exportCsv;$("printBtn").onclick=()=>window.print();
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();$("q").focus()}});
+function activateTab(name){
+ document.querySelectorAll(".workspace-tab").forEach(b=>{const on=b.dataset.tab===name;b.classList.toggle("active",on);b.setAttribute("aria-selected",String(on));});
+ document.querySelectorAll(".tab-panel").forEach(p=>{const on=p.id==="panel-"+name;p.hidden=!on;p.classList.toggle("active",on);});
+ try{sessionStorage.setItem("dscda-active-tab",name)}catch(e){}
+ if(name==="matrix")updateMatrix();if(name==="analytics"){updateKpis();updateInsights();populateContactTools()}if(name==="quality")updateQuality();
+}
+document.querySelectorAll(".workspace-tab").forEach(b=>b.addEventListener("click",()=>activateTab(b.dataset.tab)));
+try{const savedTab=sessionStorage.getItem("dscda-active-tab");if(savedTab&&document.getElementById("panel-"+savedTab))activateTab(savedTab)}catch(e){}
 load();setInterval(load,REFRESH);
 
 </script></body></html>
