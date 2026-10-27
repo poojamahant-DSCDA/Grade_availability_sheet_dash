@@ -1,193 +1,423 @@
 <!DOCTYPE html>
+
 <html lang="en"><head><meta charset="utf-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>DSCDA · Polymer Grade Availability</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght\@400;500;600&family=JetBrains+Mono:wght\@400;500&family=Source+Serif+4:wght\@500;600;700&display=swap" rel="stylesheet">
+
 <style>
+
 :root{--navy:#14306b;--ink:#1a2b55;--mu:#5d6d93;--bd:#dde6f6;--card:#fbfcff;--ac:#1d4ed8;--chip:#eaf0fd;--ok:#0f9d6b;--warn:#d97706}
+
 *{box-sizing:border-box}
+
 body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:linear-gradient(180deg,#dbe8fb 0%,#eaf1fd 45%,#f3f7fe 100%);min-height:100vh}
+
 .w{max-width:1280px;margin:0 auto;padding:0 20px 60px}
+
 .mono{font-family:"JetBrains Mono",monospace;letter-spacing:.14em;text-transform:uppercase;font-size:10.5px;color:var(--mu)}
+
 .serif{font-family:"Source Serif 4",Georgia,serif;color:var(--navy)}
+
 .top{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid var(--bd);border-radius:0 0 18px 18px;padding:10px 14px;box-shadow:0 6px 24px rgba(30,64,140,.07)}
+
 .logo{width:40px;height:40px;border-radius:10px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:700;font-family:"Source Serif 4",serif}
+
 .brand b{display:block;font-family:"Source Serif 4",serif;font-size:16px;color:var(--navy)}
+
 .search{flex:1;position:relative}
+
 .search input{width:100%;padding:11px 14px 11px 38px;border:1px solid var(--bd);border-radius:10px;background:#fcfdff;font:inherit;font-size:14px;color:var(--ink)}
+
 .search:before{content:"⌕";position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mu)}
+
 .me{display:flex;align-items:center;gap:8px;border:1px solid var(--bd);border-radius:12px;padding:6px 12px;font-size:13px;font-weight:600}
+
 .me i{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ac);display:grid;place-items:center;font-size:10px;font-style:normal;color:var(--ac)}
+
 .hero{text-align:center;padding:48px 0 34px}
+
 .hero h1{font-size:clamp(34px,5vw,54px);margin:10px 0 8px;font-weight:600;letter-spacing:-.02em}
+
 .hero p{margin:0;color:var(--mu);font-size:16px}
+
 h2{font-family:"Source Serif 4",serif;color:var(--navy);font-size:24px;margin:6px 0 16px;font-weight:600}
+
 .sec{margin-top:36px}
+
 .cards{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+
 .card{background:var(--card);border:1px solid var(--bd);border-radius:22px;padding:24px;box-shadow:0 10px 30px rgba(30,64,140,.06)}
+
 .type{cursor:pointer;position:relative;overflow:hidden;transition:.15s}
+
 .type:hover,.type.on{border-color:var(--ac);transform:translateY(-2px)}
+
 .ico{width:44px;height:44px;border-radius:12px;background:var(--chip);border:1px solid var(--bd);display:grid;place-items:center;color:var(--ac);font-weight:700;margin-bottom:14px}
+
 .type h3{font-family:"Source Serif 4",serif;font-size:26px;margin:4px 0;color:var(--navy);font-weight:600}
+
 .type .m{font-size:13px;color:var(--mu)}
+
 .type .st{margin-top:12px;font-family:"JetBrains Mono",monospace;font-size:11.5px}.st b{font-size:13px;margin-right:3px}.st span{margin-right:14px}
+
 .grid{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start}
+
 @media(max-width:860px){.grid{grid-template-columns:1fr}.top .brand span,.me span{display:none}}
+
 label{display:block;margin:14px 0 5px}
+
 select,input.f{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);background:#fff;font:inherit;font-size:14px;color:var(--ink)}
+
 .seg{display:flex;gap:6px}.seg button{flex:1}
+
 button{font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--bd);background:#fff;color:var(--ink);padding:9px 12px;border-radius:10px}
+
 button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+
 .go{width:100%;margin-top:18px;background:var(--navy);color:#fff;border:0;padding:13px;font-weight:600;letter-spacing:.06em}
+
 .prev{margin-top:14px;padding:12px;border-radius:12px;background:var(--chip);font-size:13px;min-height:46px}
+
 .chip{display:inline-block;background:var(--chip);border:1px solid var(--bd);border-radius:20px;padding:4px 11px;font-size:12px;margin:4px 5px 0 0}
+
 .chip small{color:var(--mu);margin-left:4px}.chip.m{opacity:.55;border-style:dashed}
+
 .row{border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:12px;background:#fff}
+
 .top2{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+
 .g{font-family:"Source Serif 4",serif;font-size:19px;font-weight:600;color:var(--navy)}
+
 .tag{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:#fff;border-radius:6px;padding:3px 8px;margin-right:10px;vertical-align:middle}
+
 .PP{background:#1d4ed8}.PE{background:#0f9d6b}.PVC{background:#d97706}
+
 .pill{font-size:11.5px;border-radius:20px;padding:3px 10px;background:#e3f6ee;color:#0b7a53;margin-left:8px}.pill.w{background:#fdf0dc;color:#a45a06}
+
 .meta{color:var(--mu);font-size:13px}
+
 .act{display:flex;gap:6px}.act button{padding:5px 10px;font-size:12px}
+
 .note{margin:0 0 16px;padding:12px 16px;border-radius:12px;background:#fff7e6;border:1px solid #f3d9a4;font-size:13px;display:none}
+
 .empty{text-align:center;color:var(--mu);padding:34px}
+
 </style></head><body><div class="w">
+
 <div class="top"><div class="logo">DC</div><div class="brand"><b>DSCDA</b><span class="mono">Digital Operating System</span></div>
+
 <div class="search"><input id="q" placeholder="Search grade, plant, customer…"></div>
+
 <div class="me"><i>MD</i><span>MD<br><span class="mono" style="font-size:8px">Role</span></span></div></div>
 
+
+
 <div class="hero"><div class="mono">Polymer · Grade availability</div><h1 class="serif">Grade Availability Desk</h1>
+
 <p>Log a grade once. Every customer who buys it from that plant is ready to notify.</p></div>
+
 <div class="note" id="note"></div>
 
+
+
 <div class="sec"><div class="mono">Business lines</div><h2>Select a polymer family</h2>
+
 <div class="cards" id="types"></div></div>
 
+
+
 <div class="sec"><div class="mono">Operations</div><h2>Log &amp; notify</h2>
+
 <div class="grid">
- <div class="card"><div class="seg" id="ft"></div>
-  <label class="mono">Grade</label><select id="gradeSel"></select><input class="f" id="gradeOther" placeholder="Type grade manually" hidden style="margin-top:8px">
-  <label class="mono">Plant / Depot</label><select id="plantSel"></select><input class="f" id="plantOther" placeholder="Type plant or depot manually" hidden style="margin-top:8px">
-  <label class="mono">Status</label><div class="seg" id="fs"></div>
-  <label class="mono">Date</label><input class="f" type="date" id="date">
-  <button class="go" id="add">ADD TO BOARD →</button></div>
- <div class="card"><div class="top2"><h2 style="margin:0" id="bt">Live grade board</h2><span class="mono" id="sync">Syncing…</span></div>
-  <div id="list"></div></div>
+
+ <div class="card"><div class="seg" id="ft"></div>
+
+  <label class="mono">Grade</label><select id="gradeSel"></select><input class="f" id="gradeOther" placeholder="Type grade manually" hidden style="margin-top:8px">
+
+  <label class="mono">Plant / Depot</label><select id="plantSel"></select><input class="f" id="plantOther" placeholder="Type plant or depot manually" hidden style="margin-top:8px">
+
+  <label class="mono">Status</label><div class="seg" id="fs"></div>
+
+  <label class="mono">Date</label><input class="f" type="date" id="date">
+
+  <button class="go" id="add">ADD TO BOARD →</button></div>
+
+ <div class="card"><div class="top2"><h2 style="margin:0" id="bt">Live grade board</h2><span class="mono" id="sync">Syncing…</span></div>
+
+  <div id="list"></div></div>
+
 </div></div></div>
+
 <script>
+
 const SHEET_ID="10yxl_jOXOcqz-nFn5CxeN2hCDBNNXnQjhcTrPNw8XNk";
-const ALIAS={BINOLA:["BINOLA","GURGAON"]};           // plant → locations in SUPPORT tab (edit as needed)
+
+const ALIAS={BINOLA:["BINOLA","GURGAON"]};           // plant → locations in SUPPORT tab (edit as needed)
+
 const PLANTS=["Binola","Dadri","Kumaspur","Hazira","Jamnagar","Haridwar"];
-const WEBAPP_URL="https://script.google.com/macros/s/AKfycbwzslzU_5kRlZ59UobMOXO6bZ3V-VpE8vzuDcQF_yEZe68FNZ_yeQh9TrVX_ZAEE58/exec";   // ← paste your Apps Script /exec URL here to share entries with everyone (see Code.gs)
+
+const WEBAPP_URL="https://script.google.com/macros/s/AKfycbwzslzU_5kRlZ59UobMOXO6bZ3V-VpE8vzuDcQF_yEZe68FNZ_yeQh9TrVX_ZAEE58/exec";   // ← paste your Apps Script /exec URL here to share entries with everyone (see Code.gs)
+
 const LS="dscda-manual-v1",REFRESH=5*60*1000;
+
 const $=id=>document.getElementById(id);
+
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
 const nm=s=>s.toUpperCase().replace(/\s/g,"");
+
 const url=s=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${s}&headers=0`;
+
 function csv(t){const R=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const x=t[i];
- if(q){if(x=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=x}
- else if(x=='"')q=true;else if(x==",")(r.push(c),c="");else if(x=="\n")(r.push(c),R.push(r),r=[],c="");else if(x!="\r")c+=x}
- if(c||r.length)(r.push(c),R.push(r));return R}
-const MERGE={};   // optional: {"K.L.J POLYMERS PRIVATE LIMITED":"KLJ Polymers"} to join two sold-to names
-const pretty=s=>{s=s.trim().replace(/\s+/g," ").replace(/\s*\.$/,"");const k=s.toUpperCase();if(MERGE[k])return MERGE[k];
- return s.toLowerCase().replace(/\b\w/g,m=>m.toUpperCase()).replace(/\b(Srf|Appl|Ppap|Jbj|Kb|Klj|Sgs|Llp)\b/g,m=>m.toUpperCase())};
+
+ if(q){if(x=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=x}
+
+ else if(x=='"')q=true;else if(x==",")(r.push(c),c="");else if(x=="\n")(r.push(c),R.push(r),r=[],c="");else if(x!="\r")c+=x}
+
+ if(c||r.length)(r.push(c),R.push(r));return R}
+
+const MERGE={};   // optional: {"K.L.J POLYMERS PRIVATE LIMITED":"KLJ Polymers"} to join two sold-to names
+
+const pretty=s=>{s=s.trim().replace(/\s+/g," ");const k=s.toUpperCase();if(MERGE[k])return MERGE[k];
+
+ return s.toLowerCase().replace(/\b\w/g,m=>m.toUpperCase()).replace(/\b(Srf|Appl|Ppap|Jbj|Kb|Klj|Sgs|Llp)\b/g,m=>m.toUpperCase())};
+
 let T="PP",F="ALL",S="Available",E=[],B={},GT={},GD={},LOCS=new Set(),PLS=new Set(),ORD={},Q="",manual=[];
+
 try{manual=JSON.parse(localStorage.getItem(LS)||"[]")}catch(e){}
+
 function parseSupport(rows){B={};GT={};GD={};LOCS=new Set();PLS=new Set();ORD={};
- rows.slice(1).forEach(r=>{["PP","PE","PVC"].forEach((t,i)=>{if(r[i]&&r[i].trim()){GT[nm(r[i])]=t;GD[nm(r[i])]=r[i].trim()}});
-  if((r[10]||"").trim())PLS.add(r[10].trim().toUpperCase());if((r[9]||"").trim())PLS.add(r[9].split(",")[0].trim().toUpperCase());
-  const c=(r[15]||"").trim(),l=(r[16]||"").trim().toUpperCase(),g=nm(r[17]||"");if(!c||!g||!l)return;LOCS.add(l);ORD[g]=ORD[g]||(r[17]||"").trim();
-  const k=g+"|"+l;B[k]=B[k]||{};const n=pretty(c);B[k][n]=(B[k][n]||0)+1;if(!GT[g])GT[g]=GT[g]})}
+
+ rows.slice(1).forEach(r=>{["PP","PE","PVC"].forEach((t,i)=>{if(r[i]&&r[i].trim()){GT[nm(r[i])]=t;GD[nm(r[i])]=r[i].trim()}});
+
+  if((r[10]||"").trim())PLS.add(r[10].trim().toUpperCase());if((r[9]||"").trim())PLS.add(r[9].split(",")[0].trim().toUpperCase());
+
+  const c=(r[15]||"").trim(),l=(r[16]||"").trim().toUpperCase(),g=nm(r[17]||"");if(!c||!g||!l)return;LOCS.add(l);ORD[g]=ORD[g]||(r[17]||"").trim();
+
+  const k=g+"|"+l;B[k]=B[k]||{};const n=pretty(c);B[k][n]=(B[k][n]||0)+1;if(!GT[g])GT[g]=GT[g]})}
+
 function parseTab(rows,t){const out=[];const hi=rows.findIndex(r=>r.some(c=>c.trim().toUpperCase()=="GRADE"));if(hi<0)return out;
- const h=rows[hi].map(c=>c.trim().toUpperCase()),gi=h.indexOf("GRADE"),da=h.indexOf("GRADE AVAILABILITY DATE"),dp=h.indexOf("GRADE PRODUCTION DATE");
- const pc=[];h.forEach((c,i)=>{if(i>gi&&c&&c!="CUSTOMER NAME"&&!/DATE/.test(c))pc.push([i,c[0]+c.slice(1).toLowerCase()])});
- pc.forEach(x=>PLS.add(x[1].toUpperCase()));
- rows.slice(hi+1).forEach(r=>{const g=(r[gi]||"").trim();if(!g)return;GT[nm(g)]=t;GD[nm(g)]=g;
-  pc.forEach(([i,p])=>{const v=(r[i]||"").trim().toUpperCase();if(v=="A"||v=="T"){const ad=(r[da]||"").trim(),pdt=(r[dp]||"").trim();out.push({id:"s"+t+g+p,t,g,p,s:v=="T"?"Status T":(pdt&&!ad?"Production starts":"Available"),d:ad||pdt,sheet:1})}})});
- return out}
+
+ const h=rows[hi].map(c=>c.trim().toUpperCase()),gi=h.indexOf("GRADE"),da=h.indexOf("GRADE AVAILABILITY DATE"),dp=h.indexOf("GRADE PRODUCTION DATE");
+
+ const pc=[];h.forEach((c,i)=>{if(i>gi&&c&&c!="CUSTOMER NAME"&&!/DATE/.test(c))pc.push([i,c[0]+c.slice(1).toLowerCase()])});
+
+ pc.forEach(x=>PLS.add(x[1].toUpperCase()));
+
+ rows.slice(hi+1).forEach(r=>{const g=(r[gi]||"").trim();if(!g)return;GT[nm(g)]=t;GD[nm(g)]=g;
+
+  pc.forEach(([i,p])=>{const v=(r[i]||"").trim().toUpperCase();if(v=="A"||v=="T"){const ad=(r[da]||"").trim(),pdt=(r[dp]||"").trim();out.push({id:"s"+t+g+p,t,g,p,s:v=="T"?"Status T":(pdt&&!ad?"Production starts":"Available"),d:ad||pdt,sheet:1})}})});
+
+ return out}
+
 function buyers(g,p){const locs=ALIAS[p.toUpperCase()]||[p.toUpperCase()],m={};
- locs.forEach(l=>Object.entries(B[nm(g)+"|"+l]||{}).forEach(([c,n])=>m[c]=(m[c]||0)+n));
- return Object.entries(m).sort((a,b)=>b[1]-a[1])}
+
+ locs.forEach(l=>Object.entries(B[nm(g)+"|"+l]||{}).forEach(([c,n])=>m[c]=(m[c]||0)+n));
+
+ return Object.entries(m).sort((a,b)=>b[1]-a[1])}
+
 function others(g,p){const own=new Set(buyers(g,p).map(x=>x[0])),m={};
- Object.entries(B).forEach(([k,v])=>{if(k.split("|")[0]==nm(g))Object.keys(v).forEach(c=>{if(!own.has(c))m[c]=1})});return Object.keys(m)}
+
+ Object.entries(B).forEach(([k,v])=>{if(k.split("|")[0]==nm(g))Object.keys(v).forEach(c=>{if(!own.has(c))m[c]=1})});return Object.keys(m)}
+
 function seg(id,items,cur,fn){$(id).innerHTML=items.map(i=>`<button class="${i==cur?"on":""}" data-v="${i}">${i}</button>`).join("");$(id).onclick=e=>e.target.dataset.v&&fn(e.target.dataset.v)}
+
 const tc=x=>x.toLowerCase().replace(/\b\w/g,m=>m.toUpperCase());
+
 const OTHER='<option value="__o">Other (type manually)…</option>';
+
 const isPVC=k=>/^(K6|5[67]G|67)/.test(k);
+
 function fillGrades(){const set={};Object.keys(GT).filter(g=>GT[g]==T).forEach(g=>set[g]=GD[g]||g);
- E.filter(e=>e.t==T).forEach(e=>set[nm(e.g)]=set[nm(e.g)]||e.g);
- const oth=Object.keys(ORD).filter(k=>!GT[k]&&!set[k]&&(T=="PVC")==isPVC(k)).map(k=>ORD[k]).sort();
- $("gradeSel").innerHTML='<option value="">Select grade…</option>'+Object.values(set).sort().map(g=>`<option>${esc(g)}</option>`).join("")
-  +(oth.length?`<optgroup label="Seen in orders, not in master list">${oth.map(g=>`<option>${esc(g)}</option>`).join("")}</optgroup>`:"")+OTHER;
- $("gradeOther").hidden=true;$("gradeOther").value=""}
-function fillPlants(){const set={};PLANTS.concat([...PLS,...LOCS].map(tc)).forEach(x=>set[x.toUpperCase()]=x);
- $("plantSel").innerHTML=Object.values(set).sort().map(p=>`<option>${esc(p)}</option>`).join("")+OTHER;
- $("plantOther").hidden=true;$("plantOther").value=""}
+
+ E.filter(e=>e.t==T).forEach(e=>set[nm(e.g)]=set[nm(e.g)]||e.g);
+
+ const oth=Object.keys(ORD).filter(k=>!GT[k]&&!set[k]&&(T=="PVC")==isPVC(k)).map(k=>ORD[k]).sort();
+
+ $("gradeSel").innerHTML='<option value="">Select grade…</option>'+Object.values(set).sort().map(g=>`<option>${esc(g)}</option>`).join("")
+
+  +(oth.length?`<optgroup label="Seen in orders, not in master list">${oth.map(g=>`<option>${esc(g)}</option>`).join("")}</optgroup>`:"")+OTHER;
+
+ $("gradeOther").hidden=true;$("gradeOther").value=""}
+
+function fillPlants(){
+  const grade = getG();
+  const select = $("plantSel");
+  const previous = select.value;
+
+  if (!grade) {
+    select.innerHTML = '<option value="">Select grade first…</option>';
+    $("plantOther").hidden = true;
+    $("plantOther").value = "";
+    return;
+  }
+
+  const gradeKey = nm(grade);
+  const locations = new Set();
+  Object.keys(B).forEach(key => {
+    const parts = key.split("|");
+    const g = parts[0];
+    const location = parts[1];
+    if (g === gradeKey && Object.keys(B[key] || {}).length > 0) {
+      locations.add(location);
+    }
+  });
+
+  const plants = [...locations].map(tc).sort((a,b) => a.localeCompare(b));
+  select.innerHTML = '<option value="">Select plant / depot…</option>' +
+    plants.map(plant => `<option value="${esc(plant)}">${esc(plant)}</option>`).join("") +
+    OTHER;
+
+  // Keep the prior choice only when it is valid for the newly selected grade.
+  if (plants.some(plant => nm(plant) === nm(previous))) {
+    select.value = plants.find(plant => nm(plant) === nm(previous));
+  }
+
+  $("plantOther").hidden = true;
+  $("plantOther").value = "";
+}
 const getG=()=>($("gradeSel").value=="__o"?$("gradeOther").value:$("gradeSel").value).trim();
+
 const getP=()=>($("plantSel").value=="__o"?$("plantOther").value:$("plantSel").value).trim();
+
 function form(){seg("ft",["PP","PE","PVC"],T,v=>{T=v;form()});fillGrades();if(!$("plantSel").options.length)fillPlants();segS();prev()}
+
 function segS(){seg("fs",["Available","Production starts"],S,v=>{S=v;segS()})}
+
 function prev(){render()}
+
 function clearG(){$("gradeSel").value="";$("gradeOther").hidden=true;$("gradeOther").value="";render()}
+
 function parseLog(rows){if(!rows.length||(rows[0][0]||"").trim()!="Timestamp")return[];
- return rows.slice(1).filter(r=>r[1]).map(r=>({id:"l"+r[1].trim(),t:r[2],g:r[3],p:r[4],s:r[5],d:(r[6]||"").trim(),shared:1}))}
+
+ return rows.slice(1).filter(r=>r[1]).map(r=>({id:"l"+r[1].trim(),t:r[2],g:r[3],p:r[4],s:r[5],d:(r[6]||"").trim(),shared:1}))}
+
 async function post(o){let pin=localStorage.getItem("dscda-pin")||prompt("Team passcode:");if(!pin)throw"cancel";
- const r=await fetch(WEBAPP_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...o,pin})}).then(r=>r.json());
- if(r.error=="pin"){localStorage.removeItem("dscda-pin");alert("Wrong passcode.");throw"pin"}
- if(r.error){alert("Save failed: "+r.error);throw r.error}
- localStorage.setItem("dscda-pin",pin);return r}
+
+ const r=await fetch(WEBAPP_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...o,pin})}).then(r=>r.json());
+
+ if(r.error=="pin"){localStorage.removeItem("dscda-pin");alert("Wrong passcode.");throw"pin"}
+
+ if(r.error){alert("Save failed: "+r.error);throw r.error}
+
+ localStorage.setItem("dscda-pin",pin);return r}
+
 const pd_=s=>{if(!s)return null;let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);if(m)return new Date(+m[1],m[2]-1,+m[3]);m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);return m?new Date(+m[3],m[2]-1,+m[1]):null};
+
 const fd=s=>{const d=pd_(s);return d?d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):(s||"no date")};
+
 const age=s=>{const d=pd_(s);return d?Math.floor((Date.now()-d)/864e5):null};
+
 function all(){return [...E,...manual]}
+
 function render(){const A=all(),f=Q.toLowerCase();
- $("types").innerHTML=["PP","PE","PVC"].map(t=>{const a=A.filter(e=>e.t==t);const cu=new Set(a.flatMap(e=>buyers(e.g,e.p).map(x=>x[0])));
-  const nmx={PP:"Polypropylene",PE:"Polyethylene",PVC:"PVC"}[t];
-  return `<div class="card type ${F==t?"on":""}" onclick="F=F=='${t}'?'ALL':'${t}';render()"><div class="ico">${t[0]}</div><h3>${t}</h3><div class="m">${nmx} · grade availability</div>
-  <div class="st"><span><b>${a.length}</b>live grades</span><span><b>${cu.size}</b>customers</span></div></div>`}).join("");
- const L=A.filter(e=>(F=="ALL"||e.t==F)&&(!f||(e.g+" "+e.p+" "+buyers(e.g,e.p).map(x=>x[0]).join(" ")).toLowerCase().includes(f)));
- const chips=b=>b.map(([c,n])=>`<span class="chip">${esc(c)}<small>×${n}</small></span>`).join("");
- const rowH=e=>{const b=buyers(e.g,e.p),msg=`${e.g} (${e.t}) – ${e.s} at ${e.p}${e.d?" from "+fd(e.d):""}`;
-  return `<div class="row"><div class="top2"><div><span class="tag ${e.t}">${e.t}</span><span class="g">${esc(e.g)}</span><span class="pill ${e.s=="Available"?"":"w"}">${e.s}</span></div>
-  <div class="act"><span class="meta">${esc(e.p)} · ${esc(fd(e.d))}${age(e.d)>30?` <span class="pill w">${age(e.d)} days old</span>`:""}</span><button onclick="cp(${JSON.stringify(msg+(b.length?"\nCustomers: "+b.map(x=>x[0]).join(", "):"")).replace(/"/g,"&quot;")})">Copy</button>${e.sheet?"":`<button onclick="del('${e.id}')">✕</button>`}</div></div>
-  <div>${chips(b)||'<span class="meta">No matching customers yet</span>'}</div></div>`};
- const g=getG(),p=getP();$("bt").textContent=g?"Grade details":"Live grade board";
- if(g){const k=nm(g),ty=GT[k]||T,ent=A.filter(e=>nm(e.g)==k),locs={};
-  Object.entries(B).forEach(([key,v])=>{const[gg,l]=key.split("|");if(gg==k)locs[l]=v});
-  const LR=Object.entries(locs).map(([l,v])=>[tc(l),Object.entries(v).sort((x,y)=>y[1]-x[1])]).sort((x,y)=>y[1].length-x[1].length);
-  const all_=new Set(LR.flatMap(x=>x[1].map(c=>c[0]))),here=p?buyers(g,p):[];
-  $("list").innerHTML=`<div class="row" style="background:var(--chip)"><div class="top2"><div><span class="tag ${ty}">${ty}</span><span class="g">${esc(g.toUpperCase())}</span></div>
-   <button onclick="clearG()">← Show all grades</button></div><div class="meta">${all_.size} customers · ${LR.length} locations · ${ent.length} on board</div></div>
-   <div class="mono" style="margin:16px 0 8px">On the board</div>${ent.map(rowH).join("")||'<div class="meta" style="margin-bottom:8px">Not on the board yet. Choose a plant and press Add.</div>'}
-   ${p?`<div class="mono" style="margin:16px 0 4px">Customers to notify at ${esc(p)} (${here.length})</div><div>${chips(here)||'<span class="meta">No past orders for this grade at this plant.</span>'}</div>`:""}
-   <div class="mono" style="margin:18px 0 4px">All customers by location</div>
-   ${LR.map(([l,b])=>`<div style="margin:8px 0"><b style="font-size:13px">${esc(l)}</b> <span class="meta">${b.length}</span><div>${chips(b)}</div></div>`).join("")||'<div class="meta">No order history for this grade yet.</div>'}`;
-  return}
- L.sort((a,b)=>(pd_(b.d)||0)-(pd_(a.d)||0));
- $("list").innerHTML=L.map(rowH).join("")||'<div class="empty">Nothing matches.</div>'}
+
+ $("types").innerHTML=["PP","PE","PVC"].map(t=>{const a=A.filter(e=>e.t==t);const cu=new Set(a.flatMap(e=>buyers(e.g,e.p).map(x=>x[0])));
+
+  const nmx={PP:"Polypropylene",PE:"Polyethylene",PVC:"PVC"}[t];
+
+  return `<div class="card type ${F==t?"on":""}" onclick="F=F=='${t}'?'ALL':'${t}';render()"><div class="ico">${t[0]}</div><h3>${t}</h3><div class="m">${nmx} · grade availability</div>
+
+  <div class="st"><span><b>${a.length}</b>live grades</span><span><b>${cu.size}</b>customers</span></div></div>`}).join("");
+
+ const L=A.filter(e=>(F=="ALL"||e.t==F)&&(!f||(e.g+" "+e.p+" "+buyers(e.g,e.p).map(x=>x[0]).join(" ")).toLowerCase().includes(f)));
+
+ const chips=b=>b.map(([c,n])=>`<span class="chip">${esc(c)}<small>×${n}</small></span>`).join("");
+
+ const rowH=e=>{const b=buyers(e.g,e.p),msg=`${e.g} (${e.t}) – ${e.s} at ${e.p}${e.d?" from "+fd(e.d):""}`;
+
+  return `<div class="row"><div class="top2"><div><span class="tag ${e.t}">${e.t}</span><span class="g">${esc(e.g)}</span><span class="pill ${e.s=="Available"?"":"w"}">${e.s}</span></div>
+
+  <div class="act"><span class="meta">${esc(e.p)} · ${esc(fd(e.d))}${age(e.d)>30?` <span class="pill w">${age(e.d)} days old</span>`:""}</span><button onclick="cp(${JSON.stringify(msg+(b.length?"\nCustomers: "+b.map(x=>x[0]).join(", "):"")).replace(/"/g,"&quot;")})">Copy</button>${e.sheet?"":`<button onclick="del('${e.id}')">✕</button>`}</div></div>
+
+  <div>${chips(b)||'<span class="meta">No matching customers yet</span>'}</div></div>`};
+
+ const g=getG(),p=getP();$("bt").textContent=g?"Grade details":"Live grade board";
+
+ if(g){const k=nm(g),ty=GT[k]||T,ent=A.filter(e=>nm(e.g)==k),locs={};
+
+  Object.entries(B).forEach(([key,v])=>{const[gg,l]=key.split("|");if(gg==k)locs[l]=v});
+
+  const LR=Object.entries(locs).map(([l,v])=>[tc(l),Object.entries(v).sort((x,y)=>y[1]-x[1])]).sort((x,y)=>y[1].length-x[1].length);
+
+  const all_=new Set(LR.flatMap(x=>x[1].map(c=>c[0]))),here=p?buyers(g,p):[];
+
+  $("list").innerHTML=`<div class="row" style="background:var(--chip)"><div class="top2"><div><span class="tag ${ty}">${ty}</span><span class="g">${esc(g.toUpperCase())}</span></div>
+
+   <button onclick="clearG()">← Show all grades</button></div><div class="meta">${all_.size} customers · ${LR.length} locations · ${ent.length} on board</div></div>
+
+   <div class="mono" style="margin:16px 0 8px">On the board</div>${ent.map(rowH).join("")||'<div class="meta" style="margin-bottom:8px">Not on the board yet. Choose a plant and press Add.</div>'}
+
+   ${p?`<div class="mono" style="margin:16px 0 4px">Customers to notify at ${esc(p)} (${here.length})</div><div>${chips(here)||'<span class="meta">No past orders for this grade at this plant.</span>'}</div>`:""}
+
+   <div class="mono" style="margin:18px 0 4px">All customers by location</div>
+
+   ${LR.map(([l,b])=>`<div style="margin:8px 0"><b style="font-size:13px">${esc(l)}</b> <span class="meta">${b.length}</span><div>${chips(b)}</div></div>`).join("")||'<div class="meta">No order history for this grade yet.</div>'}`;
+
+  return}
+
+ L.sort((a,b)=>(pd_(b.d)||0)-(pd_(a.d)||0));
+
+ $("list").innerHTML=L.map(rowH).join("")||'<div class="empty">Nothing matches.</div>'}
+
 function cp(t){navigator.clipboard&&navigator.clipboard.writeText(t)}
+
 async function del(id){if(id[0]=="l"){try{await post({action:"del",id});E=E.filter(e=>e.id!=id);render()}catch(x){}return}
- manual=manual.filter(e=>e.id!=id);try{localStorage.setItem(LS,JSON.stringify(manual))}catch(e){}render()}
+
+ manual=manual.filter(e=>e.id!=id);try{localStorage.setItem(LS,JSON.stringify(manual))}catch(e){}render()}
+
 async function load(){const n=$("note");
- try{const [pp,pe,pvc,su]=await Promise.all(["PP","PE","PVC","SUPPORT"].map(s=>fetch(url(s)).then(r=>{if(!r.ok)throw 0;return r.text()})));
-  parseSupport(csv(su));E=[...parseTab(csv(pp),"PP"),...parseTab(csv(pe),"PE"),...parseTab(csv(pvc),"PVC")];
-  if(WEBAPP_URL){try{E=[...E,...parseLog(csv(await fetch(url("LOG")).then(r=>r.text())))]}catch(x){}}
-  n.style.display="none";$("sync").textContent="Synced "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}
- catch(e){n.style.display="block";n.textContent="Couldn’t read the Google Sheet. Open it → Share → set “Anyone with the link: Viewer”, then reload.";$("sync").textContent="Offline"}
- fillPlants();form();render()}
+
+ try{const [pp,pe,pvc,su]=await Promise.all(["PP","PE","PVC","SUPPORT"].map(s=>fetch(url(s)).then(r=>{if(!r.ok)throw 0;return r.text()})));
+
+  parseSupport(csv(su));E=[...parseTab(csv(pp),"PP"),...parseTab(csv(pe),"PE"),...parseTab(csv(pvc),"PVC")];
+
+  if(WEBAPP_URL){try{E=[...E,...parseLog(csv(await fetch(url("LOG")).then(r=>r.text())))]}catch(x){}}
+
+  n.style.display="none";$("sync").textContent="Synced "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}
+
+ catch(e){n.style.display="block";n.textContent="Couldn’t read the Google Sheet. Open it → Share → set “Anyone with the link: Viewer”, then reload.";$("sync").textContent="Offline"}
+
+ fillPlants();form();render()}
+
 $("q").oninput=e=>{Q=e.target.value;render()};
-$("gradeSel").onchange=()=>{$("gradeOther").hidden=$("gradeSel").value!="__o";if(!$("gradeOther").hidden)$("gradeOther").focus();prev()};
+
+$("gradeSel").onchange=()=>{
+  $("gradeOther").hidden=$("gradeSel").value!="__o";
+  if(!$("gradeOther").hidden) $("gradeOther").focus();
+  $("plantSel").value="";
+  $("plantOther").value="";
+  $("plantOther").hidden=true;
+  fillPlants();
+  prev();
+};
+
 $("plantSel").onchange=()=>{$("plantOther").hidden=$("plantSel").value!="__o";if(!$("plantOther").hidden)$("plantOther").focus();prev()};
-$("gradeOther").oninput=prev;$("plantOther").oninput=prev;
+
+$("gradeOther").oninput=()=>{$("plantSel").value="";fillPlants();prev()};$("plantOther").oninput=prev;
+
 $("date").value=new Date().toISOString().slice(0,10);
+
 $("add").onclick=async()=>{const g=getG(),p=getP();if(!g){$("gradeSel").focus();return}if(!p){$("plantSel").focus();return}
- const e={t:GT[nm(g)]||T,g:g.toUpperCase(),p:tc(p),d:$("date").value,s:S},btn=$("add");
- if(WEBAPP_URL){btn.textContent="SAVING…";btn.disabled=true;
-  try{const r=await post({action:"add",...e});E.push({...e,id:"l"+r.id,shared:1})}catch(x){btn.textContent="ADD TO BOARD →";btn.disabled=false;return}
-  btn.textContent="ADD TO BOARD →";btn.disabled=false}
- else{manual.push({...e,id:"m"+Date.now()});try{localStorage.setItem(LS,JSON.stringify(manual))}catch(x){}}
- fillGrades();prev();render()};
+
+ const e={t:GT[nm(g)]||T,g:g.toUpperCase(),p:tc(p),d:$("date").value,s:S},btn=$("add");
+
+ if(WEBAPP_URL){btn.textContent="SAVING…";btn.disabled=true;
+
+  try{const r=await post({action:"add",...e});E.push({...e,id:"l"+r.id,shared:1})}catch(x){btn.textContent="ADD TO BOARD →";btn.disabled=false;return}
+
+  btn.textContent="ADD TO BOARD →";btn.disabled=false}
+
+ else{manual.push({...e,id:"m"+Date.now()});try{localStorage.setItem(LS,JSON.stringify(manual))}catch(x){}}
+
+ fillGrades();prev();render()};
+
 load();setInterval(load,REFRESH);
+
 </script></body></html>
