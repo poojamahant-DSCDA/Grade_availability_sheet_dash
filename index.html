@@ -8,7 +8,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght\@400;500;600&family=JetBrains+Mono:wght\@400;500&family=Source+Serif+4:wght\@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
 
 <style>
 
@@ -108,13 +108,15 @@ button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 
 .empty{text-align:center;color:var(--mu);padding:34px}
 
+
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 24px}.kpi,.panel{background:#fff;border:1px solid var(--bd);border-radius:16px;padding:16px;box-shadow:0 6px 18px rgba(30,64,140,.05)}.kpi .num{font-size:27px;font-weight:600;color:var(--navy);margin-top:7px}.kpi .hint,.mini{font-size:12px;color:var(--mu)}.toolbar,.actions,.statusbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.toolbar select,.toolbar input{max-width:190px}.panel{margin-top:18px;overflow:auto}.matrix{border-collapse:separate;border-spacing:4px;width:100%;font-size:12px}.matrix th{padding:8px;color:var(--mu);text-align:left;white-space:nowrap}.matrix td{padding:8px;border-radius:7px;background:#f2f5fb;text-align:center;min-width:65px}.matrix td.av{background:#dbeafe;color:#1d4ed8;font-weight:700}.matrix td.up{background:#fff0d5;color:#9a5b00;font-weight:700}.bar{height:10px;background:#eaf0fd;border-radius:8px;overflow:hidden}.bar i{display:block;height:100%;background:#1d4ed8}.skeleton{height:58px;border-radius:12px;background:linear-gradient(90deg,#eef2fa,#f8faff,#eef2fa);margin:8px 0}body.dark{--ink:#e8eefc;--mu:#b6c5e5;--bd:#31466f;--card:#172747;--chip:#21375e;background:linear-gradient(180deg,#0d1830,#142342);color:var(--ink)}body.dark .top,body.dark .card,body.dark .row,body.dark .panel,body.dark .kpi{background:#172747;color:var(--ink)}body.dark input,body.dark select,body.dark button{background:#1d3155;color:var(--ink);border-color:#405783}body.dark .matrix td{background:#22375b}body.dark .matrix td.av{background:#244d85;color:#d9eaff}body.dark .matrix td.up{background:#674b22;color:#ffdfa3}:focus-visible{outline:3px solid #60a5fa;outline-offset:2px}@media(max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.w{padding:0 12px 40px}.hero{padding:32px 0 24px}.card{padding:18px}.toolbar select,.toolbar input{max-width:none;flex:1;min-width:130px}}@media print{.top,.hero,.note,#types,#entryCard,.toolbar,button{display:none!important}body{background:#fff}.w{max-width:none;padding:0}.panel,.card,.row{box-shadow:none;break-inside:avoid}}
 </style></head><body><div class="w">
 
 <div class="top"><div class="logo">DC</div><div class="brand"><b>DSCDA</b><span class="mono">Digital Operating System</span></div>
 
 <div class="search"><input id="q" placeholder="Search grade, plant, customer…"></div>
 
-<div class="me"><i>MD</i><span>MD<br><span class="mono" style="font-size:8px">Role</span></span></div></div>
+<div class="me"><i id="roleIcon">MD</i><span><span id="roleName">MD</span><br><span class="mono" style="font-size:8px">Role · <span id="roleText">MD</span></span></span></div><div class="actions"><button id="darkToggle" aria-label="Toggle dark mode">Dark mode</button><button id="refreshBtn">Refresh</button></div></div>
 
 
 
@@ -122,7 +124,8 @@ button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 
 <p>Log a grade once. Every customer who buys it from that plant is ready to notify.</p></div>
 
-<div class="note" id="note"></div>
+<div class="note" id="note" role="status" aria-live="polite"></div>
+<div class="kpis"><div class="kpi"><div class="mono">Grades live today</div><div class="num" id="kLive">—</div><div class="hint">Available grades on board</div></div><div class="kpi"><div class="mono">Customers to notify</div><div class="num" id="kNotify">—</div><div class="hint">Matched purchase history</div></div><div class="kpi"><div class="mono">Older than 30 days</div><div class="num" id="kOld">—</div><div class="hint">Board entries</div></div><div class="kpi"><div class="mono">Last entry time</div><div class="num" id="kLast" style="font-size:17px">—</div><div class="hint" id="kLastHint">Waiting for data</div></div></div>
 
 
 
@@ -150,7 +153,7 @@ button.on{background:var(--navy);border-color:var(--navy);color:#fff}
 
  <div class="card"><div class="top2"><h2 style="margin:0" id="bt">Live grade board</h2><span class="mono" id="sync">Syncing…</span></div>
 
-  <div id="list"></div></div>
+  <div class="toolbar"><select id="filterPlant" aria-label="Filter by plant"><option value="">All plants / depots</option></select><select id="filterStatus" aria-label="Filter by status"><option value="">All statuses</option><option>Available</option><option>Production starts</option><option>Status T</option></select><select id="filterFamily" aria-label="Filter by family"><option value="">All families</option><option>PP</option><option>PE</option><option>PVC</option></select><input class="f" id="dateFrom" type="date" aria-label="From date"><input class="f" id="dateTo" type="date" aria-label="To date"><button id="clearFilters">Clear filters</button><button id="exportBtn">Export CSV</button><button id="printBtn">Print</button></div><div class="statusbar mini"><span id="syncDetail">Loading source data…</span><span id="resultCount"></span></div><div id="list"><div class="skeleton"></div><div class="skeleton"></div></div></div>
 
 </div></div></div>
 
@@ -184,7 +187,7 @@ function csv(t){const R=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){con
 
 const MERGE={};   // optional: {"K.L.J POLYMERS PRIVATE LIMITED":"KLJ Polymers"} to join two sold-to names
 
-const pretty=s=>{s=s.trim().replace(/\s+/g," ");const k=s.toUpperCase();if(MERGE[k])return MERGE[k];
+const pretty=s=>{s=s.trim().replace(/\s+/g," ").replace(/\s*\.\s*$/,"");const k=s.toUpperCase();if(MERGE[k])return MERGE[k];
 
  return s.toLowerCase().replace(/\b\w/g,m=>m.toUpperCase()).replace(/\b(Srf|Appl|Ppap|Jbj|Kb|Klj|Sgs|Llp)\b/g,m=>m.toUpperCase())};
 
@@ -247,56 +250,29 @@ function fillGrades(){const set={};Object.keys(GT).filter(g=>GT[g]==T).forEach(g
  $("gradeOther").hidden=true;$("gradeOther").value=""}
 
 function fillPlants(){
-  const grade = getG();
-  const select = $("plantSel");
-  const previous = select.value;
-
-  if (!grade) {
-    select.innerHTML = '<option value="">Select grade first…</option>';
-    $("plantOther").hidden = true;
-    $("plantOther").value = "";
-    return;
-  }
-
-  const gradeKey = nm(grade);
-  const locations = new Set();
-  Object.keys(B).forEach(key => {
-    const parts = key.split("|");
-    const g = parts[0];
-    const location = parts[1];
-    if (g === gradeKey && Object.keys(B[key] || {}).length > 0) {
-      locations.add(location);
-    }
-  });
-
-  const plants = [...locations].map(tc).sort((a,b) => a.localeCompare(b));
-  select.innerHTML = '<option value="">Select plant / depot…</option>' +
-    plants.map(plant => `<option value="${esc(plant)}">${esc(plant)}</option>`).join("") +
-    OTHER;
-
-  // Keep the prior choice only when it is valid for the newly selected grade.
-  if (plants.some(plant => nm(plant) === nm(previous))) {
-    select.value = plants.find(plant => nm(plant) === nm(previous));
-  }
-
-  $("plantOther").hidden = true;
-  $("plantOther").value = "";
+ const g=getG?getG():"", gradeKey=nm(g), select=$("plantSel"), previous=select.value, locations=new Set();
+ if(g) Object.keys(B).forEach(key=>{const a=key.split("|");if(a[0]===gradeKey&&Object.keys(B[key]||{}).length)locations.add(a[1])});
+ const plants=[...locations].map(tc).sort((a,b)=>a.localeCompare(b));
+ select.innerHTML=(g?'<option value="">Select plant / depot…</option>':'<option value="">Select grade first…</option>')+plants.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join("");
+ select.disabled=!g;const keep=plants.find(p=>nm(p)===nm(previous));if(keep)select.value=keep;
+ $("plantOther").hidden=true;$("plantOther").value="";
+ if(g&&!plants.length)select.innerHTML='<option value="">No purchase history for this grade</option>';
 }
 const getG=()=>($("gradeSel").value=="__o"?$("gradeOther").value:$("gradeSel").value).trim();
 
 const getP=()=>($("plantSel").value=="__o"?$("plantOther").value:$("plantSel").value).trim();
 
-function form(){seg("ft",["PP","PE","PVC"],T,v=>{T=v;form()});fillGrades();if(!$("plantSel").options.length)fillPlants();segS();prev()}
+function form(){seg("ft",["PP","PE","PVC"],T,v=>{T=v;fillGrades();$("plantSel").value="";fillPlants();form()});fillGrades();fillPlants();segS();prev()}
 
 function segS(){seg("fs",["Available","Production starts"],S,v=>{S=v;segS()})}
 
 function prev(){render()}
 
-function clearG(){$("gradeSel").value="";$("gradeOther").hidden=true;$("gradeOther").value="";render()}
+function clearG(){$("gradeSel").value="";$("gradeOther").hidden=true;$("gradeOther").value="";fillPlants();render()}
 
 function parseLog(rows){if(!rows.length||(rows[0][0]||"").trim()!="Timestamp")return[];
 
- return rows.slice(1).filter(r=>r[1]).map(r=>({id:"l"+r[1].trim(),t:r[2],g:r[3],p:r[4],s:r[5],d:(r[6]||"").trim(),shared:1}))}
+ return rows.slice(1).filter(r=>r[1]).map(r=>({id:"l"+r[1].trim(),t:r[2],g:r[3],p:r[4],s:r[5],d:(r[6]||"").trim(),loggedBy:(r[7]||"").trim(),shared:1}))}
 
 async function post(o){let pin=localStorage.getItem("dscda-pin")||prompt("Team passcode:");if(!pin)throw"cancel";
 
@@ -326,7 +302,7 @@ function render(){const A=all(),f=Q.toLowerCase();
 
   <div class="st"><span><b>${a.length}</b>live grades</span><span><b>${cu.size}</b>customers</span></div></div>`}).join("");
 
- const L=A.filter(e=>(F=="ALL"||e.t==F)&&(!f||(e.g+" "+e.p+" "+buyers(e.g,e.p).map(x=>x[0]).join(" ")).toLowerCase().includes(f)));
+ const L=filteredEntries().filter(e=>(F=="ALL"||e.t==F)&&(!f||(e.g+" "+e.p+" "+buyers(e.g,e.p).map(x=>x[0]).join(" ")).toLowerCase().includes(f)));
 
  const chips=b=>b.map(([c,n])=>`<span class="chip">${esc(c)}<small>×${n}</small></span>`).join("");
 
@@ -334,7 +310,7 @@ function render(){const A=all(),f=Q.toLowerCase();
 
   return `<div class="row"><div class="top2"><div><span class="tag ${e.t}">${e.t}</span><span class="g">${esc(e.g)}</span><span class="pill ${e.s=="Available"?"":"w"}">${e.s}</span></div>
 
-  <div class="act"><span class="meta">${esc(e.p)} · ${esc(fd(e.d))}${age(e.d)>30?` <span class="pill w">${age(e.d)} days old</span>`:""}</span><button onclick="cp(${JSON.stringify(msg+(b.length?"\nCustomers: "+b.map(x=>x[0]).join(", "):"")).replace(/"/g,"&quot;")})">Copy</button>${e.sheet?"":`<button onclick="del('${e.id}')">✕</button>`}</div></div>
+  <div class="act"><span class="meta">${esc(e.p)} · ${esc(fd(e.d))}${e.loggedBy?" · Logged by "+esc(e.loggedBy):""}${age(e.d)>30?` <span class="pill w">${age(e.d)} days old</span>`:""}</span><button onclick="cp(${JSON.stringify(msg+(b.length?"\nCustomers: "+b.map(x=>x[0]).join(", "):"")).replace(/"/g,"&quot;")})">Copy</button>${e.sheet?"":`<button onclick="del('${e.id}')">✕</button>`}</div></div>
 
   <div>${chips(b)||'<span class="meta">No matching customers yet</span>'}</div></div>`};
 
@@ -364,7 +340,8 @@ function render(){const A=all(),f=Q.toLowerCase();
 
  L.sort((a,b)=>(pd_(b.d)||0)-(pd_(a.d)||0));
 
- $("list").innerHTML=L.map(rowH).join("")||'<div class="empty">Nothing matches.</div>'}
+ $("list").innerHTML=L.map(rowH).join("")||'<div class="empty">Nothing matches.</div>';
+ $("resultCount").textContent=L.length+" entries shown";updateKpis();updateMatrix();updateInsights();updateQuality();populateContactTools()}
 
 function cp(t){navigator.clipboard&&navigator.clipboard.writeText(t)}
 
@@ -372,9 +349,63 @@ async function del(id){if(id[0]=="l"){try{await post({action:"del",id});E=E.filt
 
  manual=manual.filter(e=>e.id!=id);try{localStorage.setItem(LS,JSON.stringify(manual))}catch(e){}render()}
 
+
+function parseContacts(rows){
+ if(!rows.length)return [];const h=rows[0].map(x=>(x||"").trim().toUpperCase());
+ const ci=h.findIndex(x=>x.includes("CUSTOMER")),pi=h.findIndex(x=>/PHONE|MOBILE|WHATSAPP/.test(x)),ei=h.findIndex(x=>x.includes("EMAIL"));
+ if(ci<0)return [];
+ return rows.slice(1).filter(r=>r[ci]).map(r=>({customer:pretty(r[ci]||""),phone:pi>=0?(r[pi]||"").replace(/\D/g,""):"",email:ei>=0?r[ei]||"":""}));
+}
+function updateKpis(){
+ const A=all();$("kLive").textContent=new Set(A.filter(e=>e.s==="Available").map(e=>nm(e.g))).size;
+ $("kNotify").textContent=new Set(A.flatMap(e=>buyers(e.g,e.p).map(x=>x[0]))).size;
+ $("kOld").textContent=A.filter(e=>age(e.d)>30).length;
+ const last=A.slice().sort((a,b)=>(pd_(b.d)||0)-(pd_(a.d)||0))[0];$("kLast").textContent=last?fd(last.d):"—";$("kLastHint").textContent=last?last.g+" · "+last.p:"No entries";
+}
+function populateFilters(){
+ const sel=$("filterPlant"),old=sel.value,plants=[...new Set(all().map(e=>e.p).concat([...LOCS].map(tc)))].sort();
+ sel.innerHTML='<option value="">All plants / depots</option>'+plants.map(p=>`<option>${esc(p)}</option>`).join("");if(plants.includes(old))sel.value=old;
+}
+function filteredEntries(){
+ return all().filter(e=>(!$("filterPlant").value||nm(e.p)===nm($("filterPlant").value))&&(!$("filterStatus").value||e.s===$("filterStatus").value)&&(!$("filterFamily").value||e.t===$("filterFamily").value)&&(!$("dateFrom").value||((pd_(e.d)||new Date(0))>=pd_($("dateFrom").value)))&&(!$("dateTo").value||((pd_(e.d)||new Date(0))<=pd_($("dateTo").value))));
+}
+function updateMatrix(){
+ const grades=[...new Set(all().map(e=>e.g))].sort(),plants=[...new Set(Object.keys(B).map(k=>tc(k.split("|")[1])).concat(all().map(e=>e.p)))].sort();
+ if(!grades.length||!plants.length){$("matrixWrap").textContent="No grade/plant data available yet.";return}
+ $("matrixWrap").innerHTML='<table class="matrix"><thead><tr><th>Grade</th>'+plants.map(p=>`<th>${esc(p)}</th>`).join("")+'</tr></thead><tbody>'+grades.map(g=>'<tr><th>'+esc(g)+'</th>'+plants.map(p=>{const e=all().filter(x=>nm(x.g)===nm(g)&&nm(x.p)===nm(p)).sort((a,b)=>(pd_(b.d)||0)-(pd_(a.d)||0))[0];return `<td class="${e?(e.s==="Available"?"av":"up"):""}" title="${buyers(g,p).length} matching customers">${e?(e.s==="Available"?"Available":"Upcoming"):"—"}</td>`}).join("")+'</tr>').join("")+'</tbody></table>';
+}
+function updateInsights(){
+ const monthly={},customers={};all().forEach(e=>{const d=pd_(e.d);if(d){const k=d.toLocaleDateString("en-IN",{month:"short",year:"numeric"});monthly[k]=(monthly[k]||0)+1}buyers(e.g,e.p).forEach(([c,n])=>customers[c]=(customers[c]||0)+n)});
+ const ms=Object.entries(monthly).sort((a,b)=>new Date("1 "+a[0])-new Date("1 "+b[0])).slice(-12),mm=Math.max(1,...ms.map(x=>x[1]));
+ $("monthlyChart").innerHTML=ms.length?ms.map(([m,n])=>`<div style="display:grid;grid-template-columns:80px 1fr 24px;gap:8px;align-items:center;margin:8px 0"><span>${esc(m)}</span><div class="bar"><i style="width:${100*n/mm}%"></i></div><b>${n}</b></div>`).join(""):"No dated entries to chart.";
+ const cs=Object.entries(customers).sort((a,b)=>b[1]-a[1]).slice(0,10),cm=Math.max(1,...cs.map(x=>x[1]));
+ $("topCustomers").innerHTML=cs.length?cs.map(([c,n],i)=>`<div style="display:grid;grid-template-columns:24px minmax(80px,1fr) 1fr 28px;gap:8px;align-items:center;margin:8px 0"><span>${i+1}.</span><span>${esc(c)}</span><div class="bar"><i style="width:${100*n/cm}%;background:#0f9d6b"></i></div><b>${n}</b></div>`).join(""):"No buyer history available.";
+}
+function updateQuality(){
+ const missing=[...new Set(Object.values(ORD).filter(g=>g&&!GT[nm(g)]))],variants={};Object.values(B).forEach(v=>Object.keys(v).forEach(c=>{(variants[nm(c)]||(variants[nm(c)]=new Set())).add(c)}));
+ const dup=Object.values(variants).filter(x=>x.size>1).map(x=>[...x].join(" / ")),nodate=all().filter(e=>!e.d).length;
+ $("qualityPanel").innerHTML=`<div><b>${missing.length}</b> order grades missing from master list${missing.length?": "+missing.map(esc).join(", "):""}</div><div style="margin-top:8px"><b>${dup.length}</b> possible customer-name variants${dup.length?": "+dup.map(esc).join("; "):""}</div><div style="margin-top:8px"><b>${nodate}</b> board entries without a date</div>`;
+}
+function populateContactTools(){
+ const g=getG(),p=getP(),names=g&&p?buyers(g,p).map(x=>x[0]):[],matches=names.map(n=>({name:n,c:CONTACTS.find(c=>nm(c.customer)===nm(n))})).filter(x=>x.c);
+ if(!g||!p){$("contactTools").textContent="Select a grade and plant / depot to prepare customer messages.";return}
+ const msg=`DSCDA grade update: ${g} (${GT[nm(g)]||T}) is ${S.toLowerCase()} at ${p} from ${$("date").value}. Please contact DSCDA for details.`;
+ const phones=matches.filter(x=>x.c.phone),emails=matches.filter(x=>x.c.email);
+ $("contactTools").innerHTML=`<div class="mini">${names.length} buyers · ${matches.length} matching contacts in CONTACTS</div><div class="actions" style="margin:10px 0"><button id="waAll">WhatsApp all (${phones.length})</button><button id="emailAll">Email all (${emails.length})</button><button id="copyMsg">Copy message</button></div><div class="mini">${matches.map(x=>esc(x.name)+" — "+esc(x.c.phone||x.c.email||"No contact")).join("<br>")||"Add a CONTACTS tab with Customer, Phone and Email columns to enable contact actions."}</div>`;
+ $("waAll").onclick=()=>{if(!phones.length){alert("No phone numbers found in CONTACTS.");return}window.open("https://wa.me/"+phones[0].c.phone+"?text="+encodeURIComponent(msg),"_blank","noopener")};
+ $("emailAll").onclick=()=>{if(!emails.length){alert("No email addresses found in CONTACTS.");return}location.href="mailto:"+emails.map(x=>x.c.email).join(",")+"?subject="+encodeURIComponent("Grade availability: "+g)+"&body="+encodeURIComponent(msg)};
+ $("copyMsg").onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(msg);
+}
+function exportCsv(){
+ const rows=[["Family","Grade","Plant / Depot","Status","Date","Logged by"],...filteredEntries().map(e=>[e.t,e.g,e.p,e.s,e.d||"",e.loggedBy||""])];
+ const out=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n"),a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([out],{type:"text/csv;charset=utf-8"}));a.download="DSCDA_Grade_Availability.csv";a.click();URL.revokeObjectURL(a.href);
+}
+
 async function load(){const n=$("note");
 
  try{const [pp,pe,pvc,su]=await Promise.all(["PP","PE","PVC","SUPPORT"].map(s=>fetch(url(s)).then(r=>{if(!r.ok)throw 0;return r.text()})));
+  try{CONTACTS=parseContacts(csv(await fetch(url("CONTACTS")).then(r=>r.text())))}catch(e){CONTACTS=[]}
 
   parseSupport(csv(su));E=[...parseTab(csv(pp),"PP"),...parseTab(csv(pe),"PE"),...parseTab(csv(pvc),"PVC")];
 
@@ -384,40 +415,45 @@ async function load(){const n=$("note");
 
  catch(e){n.style.display="block";n.textContent="Couldn’t read the Google Sheet. Open it → Share → set “Anyone with the link: Viewer”, then reload.";$("sync").textContent="Offline"}
 
- fillPlants();form();render()}
+ fillPlants();form();populateFilters();render();updateKpis();updateMatrix();updateInsights();updateQuality();populateContactTools();$("syncDetail").textContent="SUPPORT and board data loaded"}
 
 $("q").oninput=e=>{Q=e.target.value;render()};
 
-$("gradeSel").onchange=()=>{
-  $("gradeOther").hidden=$("gradeSel").value!="__o";
-  if(!$("gradeOther").hidden) $("gradeOther").focus();
-  $("plantSel").value="";
-  $("plantOther").value="";
-  $("plantOther").hidden=true;
-  fillPlants();
-  prev();
-};
+$("gradeSel").onchange=()=>{$("gradeOther").hidden=$("gradeSel").value!="__o";if(!$("gradeOther").hidden)$("gradeOther").focus();$("plantSel").value="";fillPlants();prev()};
 
-$("plantSel").onchange=()=>{$("plantOther").hidden=$("plantSel").value!="__o";if(!$("plantOther").hidden)$("plantOther").focus();prev()};
+$("plantSel").onchange=()=>{$("plantOther").hidden=$("plantSel").value!="__o";if(!$("plantOther").hidden)$("plantOther").focus();populateContactTools();prev()};
 
-$("gradeOther").oninput=()=>{$("plantSel").value="";fillPlants();prev()};$("plantOther").oninput=prev;
+$("gradeOther").oninput=prev;$("plantOther").oninput=prev;
 
 $("date").value=new Date().toISOString().slice(0,10);
 
 $("add").onclick=async()=>{const g=getG(),p=getP();if(!g){$("gradeSel").focus();return}if(!p){$("plantSel").focus();return}
 
- const e={t:GT[nm(g)]||T,g:g.toUpperCase(),p:tc(p),d:$("date").value,s:S},btn=$("add");
+ const loggedBy=(localStorage.getItem("dscda-logged-by")||prompt("Your name (Logged by):")||"").trim();
+  if(!loggedBy){alert("Enter your name to keep an audit trail.");return}localStorage.setItem("dscda-logged-by",loggedBy);
+  const e={t:GT[nm(g)]||T,g:g.toUpperCase(),p:tc(p),d:$("date").value,s:S,loggedBy},btn=$("add");
 
  if(WEBAPP_URL){btn.textContent="SAVING…";btn.disabled=true;
 
-  try{const r=await post({action:"add",...e});E.push({...e,id:"l"+r.id,shared:1})}catch(x){btn.textContent="ADD TO BOARD →";btn.disabled=false;return}
+  try{const r=await post({action:"add",...e,loggedBy});E.push({...e,id:"l"+r.id,shared:1})}catch(x){btn.textContent="ADD TO BOARD →";btn.disabled=false;return}
 
   btn.textContent="ADD TO BOARD →";btn.disabled=false}
 
  else{manual.push({...e,id:"m"+Date.now()});try{localStorage.setItem(LS,JSON.stringify(manual))}catch(x){}}
 
- fillGrades();prev();render()};
+ fillGrades();fillPlants();prev();render();
+  lastAdded=E[E.length-1]||manual[manual.length-1];
+  $("note").style.display="block";
+  $("note").innerHTML='Entry added · <button id="undoEntry" type="button">Undo</button>';
+  $("undoEntry").onclick=async()=>{if(!lastAdded)return;try{if(lastAdded.shared){await post({action:"del",id:lastAdded.id});E=E.filter(x=>x.id!==lastAdded.id)}else{manual=manual.filter(x=>x.id!==lastAdded.id);localStorage.setItem(LS,JSON.stringify(manual))}lastAdded=null;$("note").textContent="Entry undone.";render()}catch(err){alert("Could not undo this shared entry. Check the Apps Script permissions.")}};
+};
 
+$("refreshBtn").onclick=load;
+$("darkToggle").onclick=()=>{document.body.classList.toggle("dark");$("darkToggle").textContent=document.body.classList.contains("dark")?"Light mode":"Dark mode"};
+$("clearFilters").onclick=()=>{["filterPlant","filterStatus","filterFamily","dateFrom","dateTo"].forEach(id=>$(id).value="");render()};
+["filterPlant","filterStatus","filterFamily","dateFrom","dateTo"].forEach(id=>$(id).addEventListener("change",render));
+$("exportBtn").onclick=exportCsv;$("printBtn").onclick=()=>window.print();
+document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();$("q").focus()}});
 load();setInterval(load,REFRESH);
 
 </script></body></html>
