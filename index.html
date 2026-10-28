@@ -17,7 +17,7 @@ body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background
 .search{flex:1;position:relative}
 .search input{width:100%;padding:11px 14px 11px 38px;border:1px solid var(--bd);border-radius:10px;background:#fcfdff;font:inherit;font-size:14px;color:var(--ink)}
 .search:before{content:"⌕";position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mu)}
-.me{display:flex;align-items:center;gap:8px;border:1px solid var(--bd);border-radius:12px;padding:6px 12px;font-size:13px;font-weight:600}
+.me{cursor:pointer;display:flex;align-items:center;gap:8px;border:1px solid var(--bd);border-radius:12px;padding:6px 12px;font-size:13px;font-weight:600}
 .me i{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ac);display:grid;place-items:center;font-size:10px;font-style:normal;color:var(--ac)}
 .hero{text-align:center;padding:44px 0 30px}
 .hero h1{font-size:clamp(34px,5vw,54px);margin:10px 0 8px;font-weight:600;letter-spacing:-.02em}
@@ -77,7 +77,7 @@ body.dark .workspace-tab{background:transparent}body.dark .workspace-tab.active,
 
 <div class="top"><div class="logo">DC</div><div class="brand"><b>DSCDA</b><span class="mono">Digital Operating System</span></div>
 <div class="search"><input id="q" placeholder="Search grade, plant, customer… (Ctrl+K)"></div>
-<div class="me"><i id="roleIcon">MD</i><span><span id="roleName">MD</span><br><span class="mono" style="font-size:8px">Role · <span id="roleText">MD</span></span></span></div>
+<div class="me" id="meBox" role="button" tabindex="0" title="Click to switch user"><i id="roleIcon">MD</i><span><span id="roleName">MD</span><br><span class="mono" style="font-size:8px">Role · <span id="roleText">MD</span></span></span></div>
 <div class="act"><button id="darkToggle">Dark mode</button><button id="refreshBtn">Refresh</button></div></div>
 
 <nav class="tabbar" role="tablist" aria-label="Workspace sections">
@@ -115,7 +115,7 @@ body.dark .workspace-tab{background:transparent}body.dark .workspace-tab.active,
   </div></div>
  <div class="sec"><div class="mono">By location</div><h2>What is available where</h2><div class="pcs" id="plantCards"></div></div>
  <div class="sec"><div class="mono">Sales action list</div><h2>Customers to contact</h2>
-  <div class="panel"><div class="mini" style="margin-bottom:6px">Customers ranked by how many live grades they normally buy. Add a CONTACTS tab (Customer, Phone, Email) to get WhatsApp and email buttons.</div><div id="callList"></div></div></div>
+  <div class="panel"><div class="mini" style="margin-bottom:6px">Customers ranked by how many live grades they normally buy. Add a CONTACTS tab (Customer, Phone, Email) to get WhatsApp and email buttons.</div><div class="mini" id="contactStatus" style="margin-bottom:6px"></div><div id="callList"></div></div></div>
  <div class="sec"><div class="mono">Housekeeping</div><h2>Needs attention</h2><div class="panel" id="attention"></div></div>
 </section>
 </div>
@@ -177,9 +177,17 @@ function segS(){seg("fs",["Available","Production starts"],S,v=>{S=v;segS()})}
 function clearG(){$("gradeSel").value="";$("gradeOther").hidden=true;$("gradeOther").value="";fillPlants();render()}
 function parseLog(rows){if(!rows.length||(rows[0][0]||"").trim()!="Timestamp")return[];
  return rows.slice(1).filter(r=>r[1]).map(r=>({id:"l"+r[1].trim(),t:r[2],g:r[3],p:r[4],s:r[5],d:(r[6]||"").trim(),loggedBy:(r[7]||"").trim(),shared:1}))}
-function parseContacts(rows){if(!rows.length)return[];const h=rows[0].map(x=>(x||"").trim().toUpperCase());
+const ck=s=>s.toUpperCase().replace(/\(P\)/g," ").replace(/[^A-Z0-9 ]/g," ").replace(/\b(PVT|PRIVATE|LTD|LIMITED|LLP|P)\b/g," ").replace(/\s+/g,"");
+const ph=v=>{let d=(v||"").replace(/\D/g,"");if(d.length===11&&d[0]==="0")d=d.slice(1);return d.length===10?"91"+d:d};
+function parseContacts_old(rows){if(!rows.length)return[];const h=rows[0].map(x=>(x||"").trim().toUpperCase());
  const ci=h.findIndex(x=>x.includes("CUSTOMER")),pi=h.findIndex(x=>/PHONE|MOBILE|WHATSAPP/.test(x)),ei=h.findIndex(x=>x.includes("EMAIL"));if(ci<0)return[];
  return rows.slice(1).filter(r=>r[ci]).map(r=>({customer:pretty(r[ci]),phone:pi>=0?(r[pi]||"").replace(/\D/g,""):"",email:ei>=0?(r[ei]||"").trim():""}))}
+function parseContacts(rows){const re=/CUSTOMER|PARTY|COMPANY|NAME/;
+ const hi=rows.slice(0,6).findIndex(r=>r.some(c=>re.test((c||"").toUpperCase())));if(hi<0)return[];
+ const h=rows[hi].map(x=>(x||"").trim().toUpperCase());
+ let ci=h.findIndex(x=>x.includes("CUSTOMER"));if(ci<0)ci=h.findIndex(x=>re.test(x));
+ const pi=h.findIndex(x=>/PHONE|MOBILE|WHATSAPP|CONTACT/.test(x)),ei=h.findIndex(x=>x.includes("MAIL"));
+ return rows.slice(hi+1).filter(r=>(r[ci]||"").trim()).map(r=>({customer:r[ci].trim(),key:ck(r[ci]),phone:pi>=0?ph(r[pi]):"",email:ei>=0?(r[ei]||"").trim():""}))}
 async function post(o){let pin=localStorage.getItem("dscda-pin")||prompt("Team passcode:");if(!pin)throw"cancel";
  const r=await fetch(WEBAPP_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...o,pin})}).then(r=>r.json());
  if(r.error=="pin"){localStorage.removeItem("dscda-pin");alert("Wrong passcode.");throw"pin"}
@@ -188,8 +196,13 @@ async function post(o){let pin=localStorage.getItem("dscda-pin")||prompt("Team p
 const pd_=s=>{if(!s)return null;let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);if(m)return new Date(+m[1],m[2]-1,+m[3]);m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);return m?new Date(+m[3],m[2]-1,+m[1]):null};
 const fd=s=>{const d=pd_(s);return d?d.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}):(s||"no date")};
 const age=s=>{const d=pd_(s);return d?Math.floor((Date.now()-d)/864e5):null};
+function resetUser(){$("roleName").textContent="MD";$("roleText").textContent="MD";$("roleIcon").textContent="MD"}
 function setUser(n){$("roleName").textContent=n;$("roleText").textContent="Doer";$("roleIcon").textContent=n.split(/\s+/).map(x=>x[0]).join("").slice(0,2).toUpperCase()}
 const saved=localStorage.getItem("dscda-logged-by");if(saved)setUser(saved);
+function switchUser(){const cur=localStorage.getItem("dscda-logged-by")||"";
+ const n=prompt("Switch user.\nType a name, or leave blank to go back to MD:",cur);if(n===null)return;
+ const v=n.trim();if(!v||v.toUpperCase()==="MD"){localStorage.removeItem("dscda-logged-by");resetUser()}else{localStorage.setItem("dscda-logged-by",v);setUser(v)}}
+$("meBox").onclick=switchUser;$("meBox").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();switchUser()}};
 function all(){return [...E,...manual]}
 function filtered(){return all().filter(e=>(!$("filterPlant").value||nm(e.p)===nm($("filterPlant").value))&&(!$("filterStatus").value||e.s===$("filterStatus").value)&&(!$("dateFrom").value||(pd_(e.d)||new Date(0))>=pd_($("dateFrom").value))&&(!$("dateTo").value||(pd_(e.d)||new Date(0))<=pd_($("dateTo").value)))}
 const chips=b=>b.map(([c,n])=>`<span class="chip">${esc(c)}<small>×${n}</small></span>`).join("");
@@ -229,10 +242,12 @@ function updateOverview(){const A=all(),live=A.filter(e=>e.s==="Available");
  const P={};A.forEach(e=>(P[e.p]=P[e.p]||[]).push(e));
  $("plantCards").innerHTML=Object.entries(P).sort((a,b)=>b[1].length-a[1].length).map(([p,a])=>`<div class="pc"><div class="top2"><b class="serif" style="font-size:18px">${esc(p)}</b><span class="meta">${a.length} grade${a.length>1?"s":""}</span></div>${a.sort((x,y)=>x.g.localeCompare(y.g)).map(e=>`<span class="chip ${e.s==="Available"?"av":"up"}" title="${esc(e.s)}">${esc(e.g)}<small>${buyers(e.g,e.p).length} buyers</small></span>`).join("")}</div>`).join("")||'<div class="empty">No grades on the board yet.</div>';
  const rows=Object.entries(byC).sort((a,b)=>b[1].length-a[1].length).slice(0,15);
- $("callList").innerHTML=rows.map(([c,es])=>{const ct=CONTACTS.find(x=>nm(x.customer)===nm(c)),
+ $("callList").innerHTML=rows.map(([c,es])=>{const ct=CONTACTS.find(x=>x.key===ck(c)),
   msg=`Hello ${c}, grade update from DSCDA:\n`+es.map(e=>`• ${e.g} – ${e.s.toLowerCase()} at ${e.p}${e.d?" from "+fd(e.d):""}`).join("\n")+"\nPlease contact us for details.";
   return `<div class="cu"><b>${esc(c)}</b><div>${es.map(e=>`<span class="chip ${e.s==="Available"?"av":"up"}">${esc(e.g)}<small>${esc(e.p)}</small></span>`).join("")}</div>
   <div class="act">${ct&&ct.phone?`<a class="btn" target="_blank" rel="noopener" href="https://wa.me/${ct.phone}?text=${encodeURIComponent(msg)}">WhatsApp</a>`:""}${ct&&ct.email?`<a class="btn" href="mailto:${esc(ct.email)}?subject=${encodeURIComponent("Grade availability update")}&body=${encodeURIComponent(msg)}">Email</a>`:""}<button onclick="cp(${JSON.stringify(msg).replace(/"/g,"&quot;")})">Copy</button></div></div>`}).join("")||'<div class="empty">No customers matched yet.</div>';
+const hit=Object.keys(byC).filter(c=>CONTACTS.some(x=>x.key===ck(c))).length;
+ $("contactStatus").innerHTML=CONTACTS.length?`<b>${CONTACTS.length}</b> contacts loaded from CONTACTS · <b>${hit}</b> of ${Object.keys(byC).length} customers on the board matched${hit<Object.keys(byC).length?" (names must be close to the names in SUPPORT)":""}.`:'No contacts loaded. Check the tab is named <b>CONTACTS</b> and row 1 has <b>Customer</b>, <b>Phone</b>, <b>Email</b>.';
  const items=[];
  if(stale.length)items.push(`<b>${stale.length} older than 30 days.</b> Check these are still available, then delete if not: ${more(stale.map(e=>e.g+" ("+e.p+")"))}.`);
  if(nod.length)items.push(`<b>${nod.length} without a date.</b> Add the availability or production date in the sheet: ${more(nod.map(e=>e.g+" ("+e.p+")"))}.`);
