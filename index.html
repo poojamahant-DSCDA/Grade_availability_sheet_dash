@@ -140,9 +140,17 @@ const pretty=s=>{s=s.trim().replace(/\s+/g," ").replace(/\s*\.\s*$/,"");const k=
 let T="PP",F="ALL",S="Available",E=[],B={},GT={},GD={},LOCS=new Set(),PLS=new Set(),ORD={},Q="",manual=[],CONTACTS=[],lastAdded=null;
 try{manual=JSON.parse(localStorage.getItem(LS)||"[]")}catch(e){}
 function parseSupport(rows){B={};GT={};GD={};LOCS=new Set();PLS=new Set();ORD={};
- rows.slice(1).forEach(r=>{["PP","PE","PVC"].forEach((t,i)=>{if(r[i]&&r[i].trim()){GT[nm(r[i])]=t;GD[nm(r[i])]=r[i].trim()}});
-  if((r[10]||"").trim())PLS.add(r[10].trim().toUpperCase());if((r[9]||"").trim())PLS.add(r[9].split(",")[0].trim().toUpperCase());
-  const c=(r[15]||"").trim(),l=(r[16]||"").trim().toUpperCase(),g=nm(r[17]||"");if(!c||!g||!l)return;LOCS.add(l);ORD[g]=ORD[g]||(r[17]||"").trim();
+ const h=(rows[0]||[]).map(x=>(x||"").trim().toUpperCase());
+ const find=(re,d)=>{const i=h.findIndex(x=>re.test(x));return i>=0?i:d};
+ const ci=find(/^CUSTOMER/,19), li=find(/^SOURCE LOCATION/,20), gi=find(/^MATERIAL/,21),
+       di=find(/^DEPOT$/,13), pli=find(/^PLANT$/,14);
+ rows.slice(1).forEach(r=>{
+  ["PP","PE","PVC"].forEach((t,i)=>{if(r[i]&&r[i].trim()){GT[nm(r[i])]=t;GD[nm(r[i])]=r[i].trim()}});
+  if((r[pli]||"").trim())PLS.add(r[pli].trim().toUpperCase());
+  if((r[di]||"").trim())PLS.add(r[di].split(",")[0].trim().toUpperCase());
+  const c=(r[ci]||"").trim(), l=(r[li]||"").trim().toUpperCase(), g=nm(r[gi]||"");
+  if(!c||!g||!l)return;
+  LOCS.add(l);ORD[g]=ORD[g]||(r[gi]||"").trim();
   const k=g+"|"+l;B[k]=B[k]||{};const n=pretty(c);B[k][n]=(B[k][n]||0)+1})}
 function parseTab(rows,t){const out=[];const hi=rows.findIndex(r=>r.some(c=>c.trim().toUpperCase()=="GRADE"));if(hi<0)return out;
  const h=rows[hi].map(c=>c.trim().toUpperCase()),gi=h.indexOf("GRADE"),da=h.indexOf("GRADE AVAILABILITY DATE"),dp=h.indexOf("GRADE PRODUCTION DATE");
