@@ -211,7 +211,20 @@ function switchUser(){const cur=localStorage.getItem("dscda-logged-by")||"";
  const n=prompt("Switch user.\nType a name, or leave blank to go back to MD:",cur);if(n===null)return;
  const v=n.trim();if(!v||v.toUpperCase()==="MD"){localStorage.removeItem("dscda-logged-by");resetUser()}else{localStorage.setItem("dscda-logged-by",v);setUser(v)}}
 $("meBox").onclick=switchUser;$("meBox").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();switchUser()}};
-function all(){return [...E,...manual]}
+function all(){
+ const t=new Date();t.setHours(0,0,0,0);
+ // 1) Production starts + date reached → Available
+ const raw=[...E,...manual].map(e=>{const d=pd_(e.d);
+  return(e.s==="Production starts"&&d&&d<=t)?{...e,s:"Available",auto:1}:e});
+ // 2) Same grade + same plant, Available and date already passed → keep latest only
+ const best={};
+ raw.forEach((e,i)=>{const d=pd_(e.d);
+  if(e.s!=="Available"||!d||d>t)return;
+  const k=nm(e.g)+"|"+nm(e.p),b=best[k];
+  if(b===undefined||d>=pd_(raw[b].d))best[k]=i});
+ return raw.filter((e,i)=>{const d=pd_(e.d);
+  if(e.s!=="Available"||!d||d>t)return true;
+  return best[nm(e.g)+"|"+nm(e.p)]===i})}
 function filtered(){return all().filter(e=>(!$("filterPlant").value||nm(e.p)===nm($("filterPlant").value))&&(!$("filterStatus").value||e.s===$("filterStatus").value)&&(!$("dateFrom").value||(pd_(e.d)||new Date(0))>=pd_($("dateFrom").value))&&(!$("dateTo").value||(pd_(e.d)||new Date(0))<=pd_($("dateTo").value)))}
 const chips=b=>b.map(([c,n])=>`<span class="chip">${esc(c)}<small>×${n}</small></span>`).join("");
 function render(){const A=all(),f=Q.toLowerCase();
@@ -220,7 +233,7 @@ function render(){const A=all(),f=Q.toLowerCase();
   <div class="st"><span><b>${a.length}</b>live grades</span><span><b>${cu.size}</b>customers</span></div></div>`}).join("");
  const L=filtered().filter(e=>(F=="ALL"||e.t==F)&&(!f||(e.g+" "+e.p+" "+buyers(e.g,e.p).map(x=>x[0]).join(" ")).toLowerCase().includes(f)));
  const rowH=e=>{const b=buyers(e.g,e.p),msg=`${e.g} (${e.t}) – ${e.s} at ${e.p}${e.d?" from "+fd(e.d):""}`;
-  return `<div class="row"><div class="top2"><div><span class="tag ${e.t}">${e.t}</span><span class="g">${esc(e.g)}</span><span class="pill ${e.s=="Available"?"":"w"}">${e.s}</span></div>
+  return `<div class="row"><div class="top2"><div><span class="tag ${e.t}">${e.t}</span><span class="g">${esc(e.g)}</span><span class="pill ${e.s=="Available"?"":"w"}">${e.s}</span>${e.auto?'<span class="mini" title="Production start date has passed"> · auto</span>':''}</div>
   <div class="act"><span class="meta">${esc(e.p)} · ${esc(fd(e.d))}${e.loggedBy?" · by "+esc(e.loggedBy):""}${age(e.d)>30?` <span class="pill w">${age(e.d)} days old</span>`:""}</span><button onclick="cp(${JSON.stringify(msg+(b.length?"\nCustomers: "+b.map(x=>x[0]).join(", "):"")).replace(/"/g,"&quot;")})">Copy</button>${e.sheet?"":`<button onclick="del('${e.id}')">✕</button>`}</div></div>
   <div>${chips(b)||'<span class="meta">No matching customers yet</span>'}</div></div>`};
  const g=getG(),p=getP();$("bt").textContent=g?"Grade details":"Live grade board";
